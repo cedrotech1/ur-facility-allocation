@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Facilities Allocation Account Ready</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #4a4a4a;
+        background-color: #f0f4f9;
+        padding: 20px;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border-top: 4px solid #006998;
+      }
+      a,
+      a:visited {
+        color: #006998; /* Binance yellow */
+        text-decoration: none;
+      }
+      a:hover,
+      a:active {
+        text-decoration: underline;
+      }
+      .header {
+        background-color: #006998;
+        color: #fff;
+        padding: 10px;
+        border-radius: 4px 4px 0 0;
+        text-align: center;
+        font-size: 24px;
+        line-height: 28px;
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        text-align: center;
+        color: #909090;
+      }
+      .button {
+        display: inline-block;
+        background-color: #006998;
+        color: white !important;
+        padding: 10px 20px;
+        border-radius: 4px;
+        margin: 20px 0;
+        text-align: center;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body style="background-color: #f0f4f9">
+    <br /><br />
+    <div class="email-container">
+      <div class="header">Facilities Allocation Account Activation</div>
+      <h4>Welcome to UR facilities allocation, <%= firstname %>!</h4>
+      <p>
+        Your account has been successfully activated. Here are your initial
+        login details:
+      </p>
+      <p>
+        <strong>Username:</strong> <%= email %><br />
+        <strong>Password:</strong> <%= password %>
+      </p>
+      <p>Please click below to set a new password and access your account:</p>
+      <a class="button" href="<%= url %>">Change Your Password</a>
+      <p>
+        If you have any questions or need assistance, please do not hesitate to
+        <a href="mailto:support@yourdomain.com">contact us</a>.
+      </p>
+      <p>Warm regards,<br />UR Digitalization Services</p>
+      <div class="footer">
+        This is an automated message, please do not reply. <br />
+        For more information, visit our
+        <a href="https://facilities-allocation-frontend.vercel.app">website</a>.
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Group Assigned to Facility</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #4a4a4a;
+        background-color: #f0f4f9;
+        padding: 20px;
+        margin: 0;
+        text-align: center;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border-top: 4px solid #ffa500;
+      }
+      a,
+      a:visited {
+        color: #ffa500;
+        text-decoration: none;
+      }
+      a:hover,
+      a:active {
+        text-decoration: underline;
+      }
+      .header {
+        color: #fff;
+        background-color: #ffa500;
+        padding: 10px;
+        border-radius: 4px 4px 0 0;
+        font-size: 24px;
+        line-height: 28px;
+      }
+      .footer {
+        font-size: 12px;
+        color: #909090;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body style="background-color: #f0f4f9">
+    <br /><br />
+    <div class="email-container">
+      <div class="header">Group Assigned to Facility</div>
+      <h4>Dear <%= firstname %>,</h4>
+      <p>
+        We are pleased to inform you that your group has been successfully
+        assigned to the following facility:
+      </p>
+      <table style="margin: auto; width: 90%; text-align: left">
+        <tr>
+          <td><strong>Group Name:</strong></td>
+          <td><%= facility.group.name %></td>
+        </tr>
+        <tr>
+          <td><strong>Facility Category:</strong></td>
+          <td><%= facility.category %></td>
+        </tr>
+        <tr>
+          <td><strong>Facility Name:</strong></td>
+          <td><%= facility.name %></td>
+        </tr>
+        <tr>
+          <td><strong>Facility Location:</strong></td>
+          <td><%= facility.location %></td>
+        </tr>
+      </table>
+      <p>
+        For additional information or if you have any questions, please reach
+        out to the facility management team or reply to this email.
+      </p>
+      <p>Thank you for your attention to this matter.</p>
+      <p>Warm regards,<br />UR Digitalization Services</p>
+      <div class="footer">
+        This is an automated message, please do not reply directly. <br />
+        For further assistance, reply to this email or reach out to the
+        requestor.
+      </div>
+    </div>
+  </body>
+</html>

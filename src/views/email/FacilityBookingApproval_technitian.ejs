@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lab Booking Approval</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #4a4a4a;
+        padding: 20px;
+        margin: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 120px auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border-top: 4px solid #4caf50;
+      }
+      a,
+      a:visited {
+        color: #4caf50;
+        text-decoration: none;
+      }
+      a:hover,
+      a:active {
+        text-decoration: underline;
+      }
+      .header {
+        color: #fff;
+        background-color: #4caf50;
+        padding: 10px;
+        border-radius: 4px 4px 0 0;
+        font-size: 24px;
+        line-height: 28px;
+        text-align: center;
+      }
+      .footer {
+        font-size: 12px;
+        color: #909090;
+        margin-top: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body style="background-color: #f0f4f9">
+    <br><br>
+    <div class="email-container">
+      <div class="header">Lab Booking Approved</div>
+      <h4>Dear <%= firstname %> <%= lastname %>,</h4>
+      <p>
+        We are pleased to inform you that the lab booking for the <%= facility.category
+        %> <%= facility.name %> has been approved.
+      </p>
+      <p>Here are the details of the booking:</p>
+      <table style="margin: auto; width: 90%; text-align: left">
+        <tr>
+          <td><strong>Requestor's Name:</strong></td>
+          <td><%= requester_name %></td>
+        </tr>
+        <tr>
+          <td><strong>Requestor's Phone:</strong></td>
+          <td><%= requester_phone %></td>
+        </tr>
+        <tr>
+          <td><strong>Requestor's Email:</strong></td>
+          <td><%= requester_email %></td>
+        </tr>
+        <tr>
+          <td><strong>Location:</strong></td>
+          <td><%= facility.location %></td>
+        </tr>
+        <tr>
+          <td><strong>Start Period:</strong></td>
+          <td><%= startPeriod %></td>
+        </tr>
+        <tr>
+          <td><strong>End Period:</strong></td>
+          <td><%= endPeriod %></td>
+        </tr>
+      </table>
+      <p>
+        Please ensure that the lab is prepared and maintained accordingly during
+        the booking period.
+      </p>
+      <p>
+        If you have any questions or need further assistance, please don't
+        hesitate to reply to this email or contact us at
+        <a href="mailto:email@example.com">email@example.com</a>.
+      </p>
+      <p>Thank you for your attention to this matter!</p>
+      <p>Best regards,<br />UR Digitalization Services</p>
+      <div class="footer">
+        This is an automated message. Please do not reply directly. <br />
+        For further assistance, please reply to this email or contact us through
+        the appropriate channels.
+      </div>
+    </div>
+     
+  </body>
+</html>

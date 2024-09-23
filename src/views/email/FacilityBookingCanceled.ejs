@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Booking Request Canceled</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #4a4a4a;
+        background-color: #f0f4f9;
+        padding: 20px;
+        margin: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border-top: 4px solid #ffa500;
+      }
+      a,
+      a:visited {
+        color: #ffa500;
+        text-decoration: none;
+      }
+      a:hover,
+      a:active {
+        text-decoration: underline;
+      }
+      .header {
+        color: #fff;
+        background-color: #ffa500;
+        padding: 10px;
+        border-radius: 4px 4px 0 0;
+        font-size: 24px;
+        line-height: 28px;
+        text-align: center;
+      }
+      .button {
+        background-color: #4caf50; /* Green */
+        border: none;
+        color: white !important;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 20px 0;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .footer {
+        font-size: 12px;
+        color: #909090;
+        margin-top: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body style="background-color: #f0f4f9">
+    <br><br>
+    <div class="email-container">
+      <div class="header">Booking Request Canceled</div>
+      <h4>Important Notification</h4>
+      <p>Hello <%= firstname %>,</p>
+      <p>
+        We regret to inform you that there has been a cancellation. Please
+        review the details below:
+      </p>
+      <table style="margin: auto; width: 90%; text-align: left">
+        <tr>
+          <td><strong>Requestor's Name:</strong></td>
+          <td><%= requester_name %></td>
+        </tr>
+        <tr>
+          <td><strong>Facility:</strong></td>
+          <td><%= facility.category %> <%= facility.name %></td>
+        </tr>
+        <tr>
+          <td><strong>Location:</strong></td>
+          <td><%= facility.location %></td>
+        </tr>
+        <tr>
+          <td><strong>Start Period:</strong></td>
+          <td><%= startPeriod %></td>
+        </tr>
+        <tr>
+          <td><strong>End Period:</strong></td>
+          <td><%= endPeriod %></td>
+        </tr>
+      </table>
+      <p>
+        If you need further information, feel free to contact the requestor at
+        <%= requester_email %> or reply to this email.
+      </p>
+      <p>We appreciate your understanding and cooperation.</p>
+      <p>Best regards,<br />UR Digitalization Services</p>
+      <div class="footer">
+        This is an automated message, please do not reply directly. <br />
+        For assistance, please reply to this email or contact the requestor.
+      </div>
+    </div>
+  </body>
+</html>

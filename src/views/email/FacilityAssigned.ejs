@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Facility Assigned Confirmation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #4a4a4a;
+        background-color: #f0f4f9;
+        padding: 20px;
+        margin: 0;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border-top: 4px solid #4caf50;
+      }
+      a,
+      a:visited {
+        color: #4caf50;
+        text-decoration: none;
+      }
+      a:hover,
+      a:active {
+        text-decoration: underline;
+      }
+      .header {
+        color: #fff;
+        background-color: #4caf50;
+        padding: 10px;
+        border-radius: 4px 4px 0 0;
+        font-size: 24px;
+        line-height: 28px;
+        text-align: center;
+      }
+      .footer {
+        font-size: 12px;
+        color: #909090;
+        margin-top: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body style="background-color: #f0f4f9">
+    <br><br>
+    <div class="email-container">
+      <div class="header">Facility Assigned successfully</div>
+      <h4>Dear Dean, <%= firstname %> <%= lastname %>,</h4>
+      <p>
+        We want to inform you that group/s from your school has been assigned a default facility to use,
+      </p>
+      <table style="margin: auto; width: 90%; text-align: left">
+        
+        <tr>
+          <td><strong>Facility:</strong></td>
+          <td><%= facility.name %> <%= facility.category %></td>
+        </tr>
+        <tr>
+          <td><strong>Location:</strong></td>
+          <td><%= facility.location %></td>
+        </tr>
+        
+      </table>
+      <p>
+        You can go back in system to download updated time table,
+        <a href="mailto:email@example.com">click here</a>.
+      </p>
+      <p>
+        Should you have any additional requests or questions, please do not
+        hesitate to reach out by replying to this email or contacting us at
+        <a href="mailto:email@example.com">email@example.com</a>.
+      </p>
+      <p>Thank you for choosing our  service!</p>
+      <p>Warm regards,<br />UR Digitalization Services</p>
+      <div class="footer">
+        This is an automated message, please do not reply. <br />
+        For more information, visit our
+        <a href="https://facilities-allocation-frontend.vercel.app">website</a>.
+      </div>
+    </div>
+  </body>
+</html>
