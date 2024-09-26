@@ -1,6 +1,6 @@
 import ejs from "ejs";
 import path from "path";
-import sgMail from "@sendgrid/mail";
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import formatDate from "../helpers/formatDate";
 dotenv.config();
@@ -19,11 +19,24 @@ class Email {
     this.facility = facility;
   }
 
+  // Create a transporter
+  createTransport() {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+
   // Send the actual email
   async send(template, subject, title) {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const transporter = this.createTransport();
 
-    // 1) Render HTML based on a ejs template
+    // 1) Render HTML based on an ejs template
     const html = await ejs.renderFile(
       path.join(__dirname, `./../views/email/${template}.ejs`),
       {
@@ -50,37 +63,36 @@ class Email {
       to: this.to, // Change to your recipient
       from: this.from, // Change to your verified sender
       subject,
-      text: html,
+      text: html, // Optional: plain text body
       html,
     };
-    // 3) Create a transport and send email
-    sgMail
-      .send(mailOptions)
-      .then(() => {
-        console.log("Email sent");
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+
+    // 3) Send email
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("Email sent....");
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async sendAccountAdded() {
     await this.send("accountAdded", "Welcome to UR facilities allocation");
   }
+  
   async sendFacilityBookingConfirmation() {
-    await this.send(
-      "FacilityBookingConfirmation",
-      "Facility Booking Confirmation"
-    );
+    await this.send("FacilityBookingConfirmation", "Facility Booking Confirmation");
   }
+
   async sendResetPassword() {
     await this.send("resetPassword", "Reset Password");
   }
 
-  //cancel email
-  async sendFacilityBookingCancered() {
+  // Cancel email
+  async sendFacilityBookingCanceled() {
     await this.send("FacilityBookingCanceled", "Facility Booking Canceled");
   }
+
   async sendFacilityBookingRequest() {
     await this.send("FacilityBookingRequest", "Facility Booking Request");
   }
@@ -88,18 +100,17 @@ class Email {
   async FacilityBookingRequestForDin() {
     await this.send("FacilityBookingRequestForDin", "Facility Booking Request");
   }
+  
   async sendFacilityBookingApproval() {
     await this.send("FacilityBookingApproval", "Facility Booking Approval");
   }
+
   async sendFacilityBookingRejection() {
     await this.send("FacilityBookingRejection", "Facility Booking Rejection");
   }
 
   async FacilityBookingApproval_technitian() {
-    await this.send(
-      "FacilityBookingApproval_technitian",
-      "Facility Booking Notification"
-    );
+    await this.send("FacilityBookingApproval_technitian", "Facility Booking Notification");
   }
 
   async sendAssignedDean() {

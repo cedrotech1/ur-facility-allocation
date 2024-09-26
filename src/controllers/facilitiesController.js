@@ -150,9 +150,23 @@ export const getActivatedFacilities = async (req, res) => {
 export const getAllFacilities = async (req, res) => {
   try {
     const facilities = await getFacilities(req.user.campus);
+    const statistics = {
+      classRoom: 0,
+      computerLab: 0,
+      medicineLab: 0
+    };
+
+    facilities.forEach(facility => {
+      const category = facility.category;
+      if (statistics[category] !== undefined) {
+        statistics[category]++;
+      }
+    });
+
     return res.status(200).json({
       message: "Facilities retrieved successfully",
       facilities,
+      statistics, 
     });
   } catch (error) {
     console.log(error);
@@ -162,6 +176,8 @@ export const getAllFacilities = async (req, res) => {
     });
   }
 };
+
+
 export const deleteOneFacility = async (req, res) => {
   try {
     // if (!checkprivileges(req.user.privileges, "manage-facilities")) {

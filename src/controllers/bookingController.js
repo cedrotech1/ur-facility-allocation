@@ -204,7 +204,7 @@ export const Bookingpending = async (req, res) => {
           (data.Facility.campus_id === campusid &&
             data.Facility.managerId == req.user.id &&
             data.Facility.category == "computerLab" &&
-            data.Facility.category != "classRoom") ||
+            data.Facility.category != "classRoom") || 
           data.Facility.category == "medicineLab"
       );
     }
@@ -361,30 +361,30 @@ export const addBooking = async (req, res) => {
       );
     }
     if (facilityInfo.Facility.category === "classRoom") {
-      if (facilityInfo.Facility.defaultGroups !== null) {
-        let book = await prependingbookings(newBooking.id);
-        booking = await getOneBookingWithDetails(newBooking.id);
-        const facility = await getOneFacility(booking.Facility.id);
-        const schoolId =
-          facility.defaultGroups[0].intake.program.department.school.id;
-        let school = await getOneSchoolWithDetails(schoolId);
+      // if (facilityInfo.Facility.defaultGroups !== null) {
+      //   let book = await prependingbookings(newBooking.id);
+      //   booking = await getOneBookingWithDetails(newBooking.id);
+      //   const facility = await getOneFacility(booking.Facility.id);
+      //   const schoolId =
+      //     facility.defaultGroups[0].intake.program.department.school.id;
+      //   let school = await getOneSchoolWithDetails(schoolId);
 
-        await new Email(
-          school.schooldean,
-          null,
-          booking
-        ).FacilityBookingRequestForDin();
-        await addNotification(
-          school.schooldean,
-          "You have a new booking request",
-          "new_request",
-          booking.id,
-          booking.Facility.id
-        );
-        await new Email(req.user, null, {
-          ...facilityInfo,
-        }).sendFacilityBookingConfirmation();
-      } else {
+      //   await new Email(
+      //     school.schooldean,
+      //     null,
+      //     booking
+      //   ).FacilityBookingRequestForDin();
+      //   await addNotification(
+      //     school.schooldean,
+      //     "You have a new booking request",
+      //     "new_request",
+      //     booking.id,
+      //     booking.Facility.id
+      //   );
+      //   await new Email(req.user, null, {
+      //     ...facilityInfo,
+      //   }).sendFacilityBookingConfirmation();
+      // } else {
         approval = await getUserByPrivilege(
           "manage-facility-approval",
           req.user.campus
@@ -409,7 +409,7 @@ export const addBooking = async (req, res) => {
             );
           });
         }
-      }
+      // }
     } else {
       approval = await getUserByPrivilegeForLab(
         "manage-lab-approval",
@@ -492,7 +492,7 @@ export const getLabTechnitian = async (req, res) => {
     });
   }
 };
-//
+
 export const getSchoolDean = async (req, res) => {
   try {
     req.body.userid = req.user.id;
