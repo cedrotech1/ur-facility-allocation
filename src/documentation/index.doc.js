@@ -2736,6 +2736,39 @@ const options = {
         },
       },
     },
+    "/api/v1/booking/rejected/{id}": {
+      delete: {
+        tags: ["booking"],
+        summary: "delete rejected request a booking",
+        description: "delete rejected request a booking",
+        operationId: "deleteRejected",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "booking's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "booking canceled successfully",
+          },
+          404: {
+            description: "booking not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+          401: {
+            description: "Not authorized",
+          },
+        },
+      },
+    },
 
     "/api/v1/booking/{id}": {
       put: {

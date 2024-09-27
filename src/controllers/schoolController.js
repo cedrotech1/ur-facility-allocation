@@ -88,6 +88,7 @@ export const getAllschools = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Schools not found",
+        data
       });
     }
 
@@ -112,7 +113,7 @@ export const getAllschools = async (req, res) => {
 export const deleteOneschool = async (req, res) => {
   try {
     if (
-      req.user.role !== "systemcampusadmin" ||
+      req.user.role !== "systemcampusadmin" &&
       !checkprivileges(req.user.privileges, "manage-schools")
     ) {
       return res.status(401).json({
@@ -133,6 +134,7 @@ export const deleteOneschool = async (req, res) => {
       school,
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({
       message: "Something went wrong",
       error,

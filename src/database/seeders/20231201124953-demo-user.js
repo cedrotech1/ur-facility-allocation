@@ -25,7 +25,7 @@ module.exports = {
       {
         firstname: "systemcampusadmin",
         lastname: "systemcampusadmin",
-        email: "systemcampusadmin@example.com",
+        email: "cedrickhakuzimana@gmail.com",
         phone: "9876543210",
         role: "systemcampusadmin",
         campus: 1,
@@ -38,7 +38,7 @@ module.exports = {
       {
         firstname: "cedro",
         lastname: "mwamba",
-        email: "cedrickhakuzimana@gmail.com",
+        email: "cedrotech1@gmail.com",
         phone: "9876543210",
         role: "user",
         campus: 1,

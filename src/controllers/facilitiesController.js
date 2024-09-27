@@ -150,6 +150,8 @@ export const getActivatedFacilities = async (req, res) => {
 export const getAllFacilities = async (req, res) => {
   try {
     const facilities = await getFacilities(req.user.campus);
+    
+    // Initialize statistics with desired keys
     const statistics = {
       classRoom: 0,
       computerLab: 0,
@@ -157,16 +159,23 @@ export const getAllFacilities = async (req, res) => {
     };
 
     facilities.forEach(facility => {
-      const category = facility.category;
-      if (statistics[category] !== undefined) {
-        statistics[category]++;
+      // Normalize facility category to lowercase for comparison
+      const category = facility.category.toLowerCase();
+
+      // Map category to the appropriate statistic key
+      if (category === "classroom") {
+        statistics.classRoom++;
+      } else if (category === "computerlab") {
+        statistics.computerLab++;
+      } else if (category === "medicinelab") {
+        statistics.medicineLab++;
       }
     });
 
     return res.status(200).json({
       message: "Facilities retrieved successfully",
-      facilities,
-      statistics, 
+      facilities,  // Return facilities as they are, no changes to category casing
+      statistics,  // Return consistently formatted statistics
     });
   } catch (error) {
     console.log(error);
@@ -178,14 +187,16 @@ export const getAllFacilities = async (req, res) => {
 };
 
 
+
+
 export const deleteOneFacility = async (req, res) => {
   try {
-    // if (!checkprivileges(req.user.privileges, "manage-facilities")) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: "Not authorized",
-    //   });
-    // }
+    if (!checkprivileges(req.user.privileges, "manage-facilities")) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
     const existingFacility = await getOneFacility(req.params.id);
     if (!existingFacility) {
       return res.status(400).json({

@@ -199,14 +199,15 @@ export const Bookingpending = async (req, res) => {
       checkprivileges(req.user.privileges, "manage-lab-approval") &&
       !checkprivileges(req.user.privileges, "manage-facility-approval")
     ) {
-      data = data.filter(
-        (data) =>
-          (data.Facility.campus_id === campusid &&
-            data.Facility.managerId == req.user.id &&
-            data.Facility.category == "computerLab" &&
-            data.Facility.category != "classRoom") || 
-          data.Facility.category == "medicineLab"
-      );
+      data = data.filter((data) => {
+        return (
+          data.Facility.campus_id === campusid &&
+          data.Facility.managerId == req.user.id &&
+          data.Facility.category === "computerLab" &&
+          data.Facility.category !== "classRoom"
+        ) || data.Facility.category === "medicineLab";
+      });
+      
     }
 
     if (
@@ -587,6 +588,39 @@ export const cancelOneBooking = async (req, res) => {
       success: true,
       message: "Booking canceled successfully",
       Booking,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+export const delete_Rejected_Booking_request = async (req, res) => {
+  try {
+    if (!checkprivileges(req.user.privileges, "manage-lab-approval") &&
+    !checkprivileges(req.user.privileges, "manage-facility-approval")) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+    const BookingInfo = await getOneBookingWithDetails(req.params.id);
+    if (!BookingInfo) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking request not found",
+      });
+    }
+  
+    if (BookingInfo.status === "rejected") {
+      const Booking = await cancelBooking(req.params.id);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Rejected Request deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({

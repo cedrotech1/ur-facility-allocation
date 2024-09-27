@@ -20,7 +20,8 @@ import {
   pregpending,
   getOnePreBooking,
   getFacilityBookingsReport,
-  getFacilitiesBookingsReport
+  getFacilitiesBookingsReport,
+  delete_Rejected_Booking_request
 } from "../controllers/bookingController";
 import { protect } from "../middlewares/protect";
 
@@ -30,6 +31,7 @@ router.get("/facilities/:id", protect, getFacilityBookings);
 router.get("/facility/:id/report", protect, getFacilityBookingsReport);
 router.get("/facilitiesReport", protect, getFacilitiesBookingsReport);
 router.delete("/cancel/:id", protect, cancelOneBooking);
+router.delete("/rejected/:id", protect, delete_Rejected_Booking_request);
 router.post("/add/", protect, addBooking);
 router.get("/", protect, BookingWithAll);
 router.get("/one/:id", protect, getOneBooking);
