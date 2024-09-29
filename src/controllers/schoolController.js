@@ -19,13 +19,10 @@ export const addschool = async (req, res) => {
         message: "Not authorized",
       });
     }
-    
-
-    // Extract name and id from req.body
+  
     req.body.name = req.body.name.toUpperCase();
     const college_ID = req.body.college_ID;
 
-    // Check if name is not provided
     if (!req.body.name) {
       return res.status(400).json({
         success: false,
@@ -39,7 +36,6 @@ export const addschool = async (req, res) => {
       });
     }
 
-    // Check if  exists
     const existingCollegex = await checkExistingCollegeByid(
       req.body.college_ID
     );
@@ -103,7 +99,6 @@ export const getAllschools = async (req, res) => {
     });
   }
 };
-
 
 export const deleteOneschool = async (req, res) => {
   try {
@@ -181,8 +176,6 @@ export const updateOneschool = async (req, res) => {
 
     req.body.name = req.body.name.toUpperCase();
     const college_ID = req.body.college_ID;
-    // const campus_id = req.body.campus_id;
-    // Check if name is not provided
     if (!req.body.name) {
       return res.status(400).json({
         success: false,
@@ -197,7 +190,6 @@ export const updateOneschool = async (req, res) => {
       });
     }
 
-    // Check if  exists
     const existingCollegex = await checkExistingCollegeByid(
       req.body.college_ID
     );

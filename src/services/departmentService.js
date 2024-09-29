@@ -138,6 +138,47 @@ export const getOneDepartmentWithDetails = async (id) => {
     ],
   });
 };
+export const getOneDepartmentWithDetailsForGroup = async (id) => {
+  return await departmentModel.findByPk(id, {
+    attributes: {
+      exclude: ["school_ID"], // Exclude the 'school_ID' attribute from the Department model
+    },
+    include: [
+      {
+        model: schoolModel, // Replace 'CollegeModel' with 'SchoolModel'
+        attributes: ["id", "name"], // Include only the 'name' attribute of the School model
+        include: [
+          {
+            model: CollegeModel,
+            attributes: ["id", "name", "abbreviation"], // Include only the 'name' attribute of the College model
+            include: [
+              {
+                model: campusModel,
+                attributes: ["id", "name"], // Include only the 'name' attribute of the Campus model
+              },
+            ],
+          },
+        ],
+      },
+      {
+        model: programModel,
+        attributes: ["id", "name", "createdAt", "updatedAt"], // Include only the specified attributes of the Program model
+        include: [
+          {
+            model: Intake,
+            attributes: ["id", "displayName", "createdAt", "updatedAt"],
+            include: [
+              {
+                model: groupModel,
+                attributes: ["id", "name", "createdAt", "updatedAt"],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+};
 
 export const checkExistingDepartment = async (name, school_ID) => {
   return await departmentModel.findOne({

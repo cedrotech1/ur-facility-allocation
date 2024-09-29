@@ -18,6 +18,9 @@ module.exports = {
       size: {
         type: Sequelize.INTEGER,
       },
+      code: {
+        type: Sequelize.STRING,
+      },
       representative: {
         type: Sequelize.INTEGER,
       },

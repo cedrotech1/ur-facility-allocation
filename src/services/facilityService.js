@@ -665,6 +665,44 @@ export const removeOneDefaultGroup = async (facilityId, groupId, defaultGroupId)
   }
 };
 
+// to work on it next time
+export const removeGroupFromAllDefaultGroups = async (groupId) => {
+  try {
+    const defaultGroups = await DefaultGroupModel.findAll();
+    if (!defaultGroups || defaultGroups.length === 0) {
+      throw new Error("No default groups found.");
+    }
+    await Promise.all(
+      defaultGroups.map(async (defaultGroup) => {
+        const groupsArray = typeof defaultGroup.groups === 'string'
+          ? JSON.parse(defaultGroup.groups)
+          : defaultGroup.groups;
+        if (groupsArray.includes(groupId)) {
+          const updatedGroups = groupsArray.filter(
+            (group) => group.toString() !== groupId.toString()
+          );
+          if (updatedGroups.length === 0) {
+            await DefaultGroupModel.destroy({ where: { id: defaultGroup.id } });
+            console.log(`DefaultGroup with ID ${defaultGroup.id} deleted as no groups remain.`);
+          } else {
+            const updateResult = await DefaultGroupModel.update(
+              { groups: updatedGroups },
+              { where: { id: defaultGroup.id } }
+            );
+            if (updateResult[0] === 0) {
+              throw new Error(`Failed to update the default groups for ID ${defaultGroup.id}.`);
+            }
+          }
+        }
+      })
+    );
+
+    return true; 
+  } catch (error) {
+    throw new Error(`Error removing group from all default groups: ${error.message}`);
+  }
+};
+
 
 export const removeAllDefaultGroups = async (facilityId) => {
   try {
@@ -828,10 +866,10 @@ export const getFacilitiesHasDefaultGroupsForStudent = async () => {
     const facilities = await FacilitiesModel.findAll({
       include: [
         {
-          model: campusModel,  
-          as: 'campus', 
+          model: campusModel,
+          as: 'campus',
           attributes: ['id', 'name'],
-          required: true, 
+          required: true,
         },
         {
           model: Users,
@@ -859,24 +897,27 @@ export const getFacilitiesHasDefaultGroupsForStudent = async () => {
     }
 
     const facilitiesWithDefaultGroups = await Promise.all(
-      facilities.map(async (facility) => {
+      (facilities || []).map(async (facility) => {
+        if (!facility) {
+          return null; // Return null if facility is not defined
+        }
+
         const facilityDefaultGroups = facility.facilitydefaultGroups || [];
 
-        
         if (facilityDefaultGroups.length === 0) {
-          return null; 
+          return null;
         }
 
         const groupsWithObjects = await Promise.all(
           facilityDefaultGroups.map(async (defaultGroup) => {
             if (!defaultGroup.groups || defaultGroup.groups.length === 0) {
-              return defaultGroup; 
+              return defaultGroup;
             }
 
             const groupsWithObjects = await Promise.all(
               defaultGroup.groups.map(async (groupId) => {
                 const group = await GroupModel.findOne({
-                  attributes: ['id', 'name', 'size'],
+                  attributes: ['id', 'name', 'size', 'code'], // Fetch the code field here
                   where: { id: groupId },
                   include: [
                     {
@@ -913,6 +954,7 @@ export const getFacilitiesHasDefaultGroupsForStudent = async () => {
                   id: group.id,
                   name: group.name,
                   size: group.size,
+                  code: group.code, // Return group code here
                   intake: group.Intake
                     ? {
                         id: group.Intake.id,
@@ -933,7 +975,8 @@ export const getFacilitiesHasDefaultGroupsForStudent = async () => {
                                             ? {
                                                 id: group.Intake.program.department.School.college.id,
                                                 name: group.Intake.program.department.School.college.name,
-                                                abbreviation: group.Intake.program.department.School.college.abbreviation,
+                                                abbreviation:
+                                                  group.Intake.program.department.School.college.abbreviation,
                                               }
                                             : null,
                                         }
@@ -942,8 +985,8 @@ export const getFacilitiesHasDefaultGroupsForStudent = async () => {
                                 : null,
                             }
                           : null,
-                    }
-                  : null,
+                      }
+                    : null,
                 };
               })
             );
@@ -962,12 +1005,13 @@ export const getFacilitiesHasDefaultGroupsForStudent = async () => {
       })
     );
 
-   
-    return facilitiesWithDefaultGroups.filter(facility => facility !== null);
+    return facilitiesWithDefaultGroups.filter((facility) => facility !== null);
   } catch (error) {
     throw new Error(`Error getting facilities: ${error.message}`);
   }
 };
+
+
 
 
 export const isGroupAssignedToAnyFacility = async (user, groupId) => {

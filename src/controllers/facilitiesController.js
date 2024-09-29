@@ -606,7 +606,7 @@ export const getFacilitiesWithDefaultGroupsForStudent = async (req, res) => {
   try {
     let facilities = await getFacilitiesHasDefaultGroupsForStudent();
     if (!facilities || facilities.length === 0) {
-      facility=[]
+      facilities=[]
     }
     return res.status(200).json({
       message: "Facilities retrieved successfully",

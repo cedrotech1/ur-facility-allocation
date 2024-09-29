@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       name: DataTypes.STRING,
       intake_id: DataTypes.INTEGER,
       size: DataTypes.INTEGER,
+      code: DataTypes.STRING,
       representative: DataTypes.INTEGER,
     },
     {

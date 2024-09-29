@@ -80,6 +80,10 @@ class Email {
     await this.send("accountAdded", "Welcome to UR facilities allocation");
   }
   
+  async sendgroupcode() {
+    await this.send("classrepresentativeEmail", "group created successfully");
+  }
+  
   async sendFacilityBookingConfirmation() {
     await this.send("FacilityBookingConfirmation", "Facility Booking Confirmation");
   }

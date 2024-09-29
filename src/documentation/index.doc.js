@@ -3294,7 +3294,10 @@ const options = {
             type: "string",
             description: "college id",
           },
-          // ... (other college properties)
+          dean: {
+            type: "string",
+            description: "dean id",
+          },
         },
       },
       Facility: {

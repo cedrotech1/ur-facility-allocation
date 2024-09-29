@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Group Code Notification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #4a4a4a;
+        background-color: #f0f4f9;
+        padding: 20px;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border-top: 4px solid #006998;
+      }
+      a,
+      a:visited {
+        color: #006998;
+        text-decoration: none;
+      }
+      a:hover,
+      a:active {
+        text-decoration: underline;
+      }
+      .header {
+        background-color: #006998;
+        color: #fff;
+        padding: 10px;
+        border-radius: 4px 4px 0 0;
+        text-align: center;
+        font-size: 24px;
+        line-height: 28px;
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 12px;
+        text-align: center;
+        color: #909090;
+      }
+      .button {
+        display: inline-block;
+        background-color: #006998;
+        color: white !important;
+        border-radius: 4px;
+        margin: 20px 0;
+        text-align: center;
+        text-decoration: none;
+      }
+      .code-container {
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+      }
+      .code-input {
+        width: 80%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-right: 10px;
+      }
+      .copy-button {
+        padding: 10px 20px;
+        background-color: #006998;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      h1{
+        font-size: 1cm;
+        
+      }
+    </style>
+  </head>
+  <body style="background-color: #f0f4f9">
+    <br /><br />
+    <div class="email-container">
+      <div class="header">Group Code Notification</div>
+      <h4>Hello, <%= firstname %>!</h4>
+      <p>
+        We are pleased to inform you that your group has been successfully created.
+      </p>
+      <p>Here is your group code:</p>
+      <h1><%= url %></h1>
+
+      <p>
+        To view your assigned facility, please as group representative you have to share this group code to
+        all of your students
+      </p>
+      and also you can share this link to every one to view facility you will be assigned
+      https://facilities-assignment-portal.com/view-facility
+      <p>
+        If you have any questions, feel free to <a href="mailto:support@yourdomain.com">contact us</a>.
+      </p>
+      <p>Best regards,<br />UR Digitalization Services</p>
+      <div class="footer">
+        This is an automated message, please do not reply. <br />
+        For more information, visit our
+        <a href="https://facilities-allocation-frontend.vercel.app">website</a>.
+      </div>
+    </div>
+  </body>
+</html>

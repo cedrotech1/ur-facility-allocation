@@ -1,3 +1,4 @@
+import Email from "../utils/mailer";
 import {
   creategroup,
   getOneDepartmentWithDetails,
@@ -8,6 +9,18 @@ import {
   check,
   get_Group
 } from "../services/groupService.js";
+import { removeGroupFromAllDefaultGroups} from "../services/facilityService.js";
+
+import {getUser} from "../services/userService";
+
+
+import {
+  getOneDepartmentWithDetailsForGroup
+} from "../services/departmentService.js";
+
+import {
+  getOneProgramWithDetails
+} from "../services/programService.js";
 import { checkprivileges } from "../helpers/privileges";
 import { getIntakeById, editIntake } from "../services/intakeService.js";
 
@@ -63,13 +76,13 @@ export const addgroup = async (req, res) => {
     if (!size) {
       return res.status(400).json({
         success: false,
-        message: "size is required",
+        message: "Size is required",
       });
     }
     if (!intake_id) {
       return res.status(400).json({
         success: false,
-        message: "intake_id is required",
+        message: "Intake ID is required",
       });
     }
 
@@ -77,39 +90,48 @@ export const addgroup = async (req, res) => {
     if (!existingIntake) {
       return res.status(400).json({
         success: false,
-        message: "intake not exists ",
+        message: "Intake does not exist",
       });
     }
+
+    let program = await getOneProgramWithDetails(existingIntake.program_ID);
+    let department = await getOneDepartmentWithDetailsForGroup(program.department_ID);
+    let department_name = department.name;
 
     const existingGroup = await check(req.body.name.toUpperCase(), intake_id);
-
     if (existingGroup) {
-      console.log("group with the same name already exists in that intake");
       return res.status(400).json({
         success: false,
-        message: "group with the same name already exists in that intake",
+        message: "Group with the same name already exists in that intake",
       });
     }
 
-    // const existinggroup = await checkExistinggroupByid(intake_id);
-    // if (!existinggroup) {
-    //   console.log("group not exists ");
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "group not exists ",
-    //   });
-    // }
+    const departmentCode = department_name.substring(0, 3).toUpperCase(); 
+    const newgroup = await creategroup({
+      ...req.body,
+      code: `UR-${departmentCode}-${new Date().getTime()}`
+    });
+    const groupId = newgroup.id;
+    const groupCode = `UR-${departmentCode}-${groupId}`;
 
-    const newgroup = await creategroup(req.body);
+    await newgroup.update({ code: groupCode });
+
     const newIntakeSize = parseInt(existingIntake.size) + parseInt(size);
     await editIntake(intake_id, { size: newIntakeSize });
+
+
+    const user = await getUser(req.body.representative);
+    const url = groupCode;
+    // send email
+    await new Email(user, url).sendgroupcode();
+
+
     return res.status(201).json({
       success: true,
-      message: "group created successfully",
+      message: "Group created successfully",
       group: newgroup,
     });
   } catch (error) {
-    console.log(error);
     console.error("Error adding group:", error);
     return res.status(500).json({
       message: "Something went wrong",
@@ -117,6 +139,7 @@ export const addgroup = async (req, res) => {
     });
   }
 };
+
 
 export const deleteOnegroup = async (req, res) => {
   try {
@@ -140,7 +163,7 @@ export const deleteOnegroup = async (req, res) => {
 
     await editIntake(intake_id, { size: newIntakeSize });
     const group = await deletegroup(req.params.id);
-
+     await removeGroupFromAllDefaultGroups(req.params.id);
     return res.status(200).json({
       success: true,
       message: "group deleted successfully",
