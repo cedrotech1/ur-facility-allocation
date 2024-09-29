@@ -84,16 +84,11 @@ export const getAllschools = async (req, res) => {
   try {
     const campusid = req.user.campus;
     let data = await allschools();
-    if (!data || data.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Schools not found",
-        data
-      });
-    }
-
-  
     data = data?.filter(school => school?.college?.Campus.id === campusid);
+
+    if (!data) {
+      data=[]
+    }
 
     return res.status(200).json({
       success: true,
@@ -113,7 +108,6 @@ export const getAllschools = async (req, res) => {
 export const deleteOneschool = async (req, res) => {
   try {
     if (
-      req.user.role !== "systemcampusadmin" &&
       !checkprivileges(req.user.privileges, "manage-schools")
     ) {
       return res.status(401).json({

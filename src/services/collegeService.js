@@ -121,7 +121,7 @@ export const checkExistingCampusByid = async (id) => {
 };
 
 export const getCollegesWithCampus = async () => {
-  return await College.findAll({
+  return await CollegeModel.findAll({
     include: [
       {
         model: Campus,

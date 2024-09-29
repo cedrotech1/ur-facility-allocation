@@ -1194,6 +1194,25 @@ const options = {
         },
       },
     },
+    "/api/v1/facilities/withDefaultGroupsForStudent": {
+      get: {
+        tags: ["Facilities"],
+        summary: "get facilities with default groups ForStudent",
+        description: "get  facilities with default groups ForStudent",
+        operationId: "get facilities with default groups ForStudent",
+        responses: {
+          200: {
+            description: "facilities retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
     "/api/v1/facilities/withDefaultGroupsByDean": {
       get: {
         tags: ["Facilities"],

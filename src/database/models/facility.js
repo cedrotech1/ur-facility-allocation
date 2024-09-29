@@ -76,6 +76,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "managerId",
       as: "manager",
     });
+    Facility.belongsTo(models.Campus, {
+      foreignKey: 'campus_id',  // Foreign key on Facility table
+      as: 'campus',  // Alias used when fetching campus details
+    });
     Facility.belongsTo(models.Users, {
       foreignKey: "technicianId",
       as: "technician",

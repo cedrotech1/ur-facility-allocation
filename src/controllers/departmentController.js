@@ -119,16 +119,7 @@ export const deleteOnedepartment = async (req, res) => {
 export const departmentWithAll = async (req, res) => {
   try {
     const userCampusId = req.user.campus;
-    let data = await alldepartments();
-
-    if (!data || data.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Departments not found",
-      });
-    }
-
- 
+    let data = await alldepartments(); 
     data = data.filter(department =>
       department.School.college.Campus.id === userCampusId
     );

@@ -11,6 +11,7 @@ import {
   removeAllDefaultGroups,
   getFacilitiesHasDefaultGroups,
   getFacilitiesHasDefaultGroupsBySchool,
+  getFacilitiesHasDefaultGroupsForStudent,
   isGroupAssignedToAnyFacility,
   getDisactivesFacilities,
   getactivesFacilities,
@@ -149,7 +150,11 @@ export const getActivatedFacilities = async (req, res) => {
 };
 export const getAllFacilities = async (req, res) => {
   try {
-    const facilities = await getFacilities(req.user.campus);
+    let facilities = await getFacilities(req.user.campus);
+
+    if (!facilities || facilities.length === 0) {
+      facilities=[]; 
+    }
     
     // Initialize statistics with desired keys
     const statistics = {
@@ -185,9 +190,6 @@ export const getAllFacilities = async (req, res) => {
     });
   }
 };
-
-
-
 
 export const deleteOneFacility = async (req, res) => {
   try {
@@ -584,11 +586,9 @@ export const removeAllDefaultGroupsFromFacility = async (req, res) => {
 };
 export const getFacilitiesWithDefaultGroups = async (req, res) => {
   try {
-    const facilities = await getFacilitiesHasDefaultGroups(req.user.campus);
+    let facilities = await getFacilitiesHasDefaultGroups(req.user.campus);
     if (!facilities || facilities.length === 0) {
-      return res.status(404).json({
-        message: "No facilities found with default groups.",
-      });
+      facilities=[];
     }
     return res.status(200).json({
       message: "Facilities retrieved successfully",
@@ -602,6 +602,26 @@ export const getFacilitiesWithDefaultGroups = async (req, res) => {
     });
   }
 };
+export const getFacilitiesWithDefaultGroupsForStudent = async (req, res) => {
+  try {
+    let facilities = await getFacilitiesHasDefaultGroupsForStudent();
+    if (!facilities || facilities.length === 0) {
+      facility=[]
+    }
+    return res.status(200).json({
+      message: "Facilities retrieved successfully",
+      facilities,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+
 export const getFacilitiesWithDefaultGroupsByDean = async (req, res) => {
   try {
     if (!checkprivileges(req.user.privileges, "school-dean")) {

@@ -13,7 +13,8 @@ import {
   getFacilitiesWithDefaultGroups,
   getFacilitiesWithDefaultGroupsByDean,
   getDisactivatesFacilities,
-  getActivatedFacilities
+  getActivatedFacilities,
+  getFacilitiesWithDefaultGroupsForStudent
 } from "../controllers/facilitiesController";
 import { protect } from "../middlewares/protect";
 
@@ -22,6 +23,7 @@ const router = express.Router();
 
 router.get("/withDefaultGroupsByDean",protect, getFacilitiesWithDefaultGroupsByDean);
 router.get("/withDefaultGroups", protect, getFacilitiesWithDefaultGroups);
+router.get("/withDefaultGroupsForStudent", getFacilitiesWithDefaultGroupsForStudent);
 router.get("/", protect, getAllFacilities);
 router.get("/one/:id", protect, getOneFacilityById);
 router.get("/disactivated", protect, getDisactivatesFacilities);

@@ -8,6 +8,7 @@ const DepartmentModel = db["department"];
 const SchoolModel = db["School"];
 const CollegeModel = db["college"];
 const DefaultGroupModel = db["DefaultGroup"]; 
+const campusModel = db["Campus"];
 
 import Sequelize, { Op } from "sequelize";
 
@@ -256,8 +257,6 @@ export const getactivesFacilities = async (campus) => {
   }
 };
 
-
-// getactivesFacilities
 
 export const getFacilities = async (campus) => {
   try {
@@ -590,13 +589,12 @@ export const assignDefaultGroups = async (id, groups) => {
 
 export const assignDefaultGroupsNew = async (facilityId, { time, trimester, groups }) => {
   try {
-    // Fetch or create a single entry for the given facilityId, time, and trimester
+    
     let defaultGroup = await DefaultGroupModel.findOne({
       where: { facilityId, time, trimester }
     });
 
     if (defaultGroup) {
-      // If the entry already exists, merge the new groups with the existing groups
       const existingGroups = defaultGroup.groups || [];
       const updatedGroups = [...new Set([...existingGroups, ...groups])]; // Use Set to avoid duplicates
 
@@ -605,7 +603,6 @@ export const assignDefaultGroupsNew = async (facilityId, { time, trimester, grou
         { where: { id: defaultGroup.id } }
       );
     } else {
-      // If the entry doesn't exist, create a new one with the groups array
       defaultGroup = await DefaultGroupModel.create({
         facilityId,
         time,
@@ -671,7 +668,7 @@ export const removeOneDefaultGroup = async (facilityId, groupId, defaultGroupId)
 
 export const removeAllDefaultGroups = async (facilityId) => {
   try {
-    // Destroy all DefaultGroup entries for the given facility ID
+   
     const result = await DefaultGroupModel.destroy({
       where: { facilityId },
     });
@@ -680,7 +677,7 @@ export const removeAllDefaultGroups = async (facilityId) => {
       throw new Error("No default groups found for the specified facility.");
     }
 
-    return result; // Return the number of deleted records
+    return result; 
   } catch (error) {
     throw new Error(`Error removing all default groups: ${error.message}`);
   }
@@ -720,16 +717,14 @@ export const getFacilitiesHasDefaultGroups = async (campus) => {
     const facilitiesWithDefaultGroups = await Promise.all(
       facilities.map(async (facility) => {
         const facilityDefaultGroups = facility.facilitydefaultGroups || [];
-
-        // Check if there are any default groups
         if (facilityDefaultGroups.length === 0) {
-          return null; // Ignore facilities without default groups
+          return null; 
         }
 
         const groupsWithObjects = await Promise.all(
           facilityDefaultGroups.map(async (defaultGroup) => {
             if (!defaultGroup.groups || defaultGroup.groups.length === 0) {
-              return defaultGroup; // Return the default group even if it has no groups
+              return defaultGroup; 
             }
 
             const groupsWithObjects = await Promise.all(
@@ -828,44 +823,16 @@ export const getFacilitiesHasDefaultGroups = async (campus) => {
   }
 };
 
-
-
-
-
-
-
-export const isGroupAssignedToAnyFacility = async (user, groupId) => {
-  try {
-    const campusId = user.campus;
-    const conflictingFacilities = await FacilitiesModel.findAll({
-      where: {
-        campus_id: campusId,
-      },
-    });
-
-    if (!conflictingFacilities || conflictingFacilities.length === 0) {
-      return false;
-    }
-
-    const hasGroupAssigned = conflictingFacilities.some((facility) => {
-      const defaultGroups = facility.defaultGroups;
-      return defaultGroups && defaultGroups.includes(groupId);
-    });
-
-    return hasGroupAssigned;
-  } catch (error) {
-    console.error(`Error checking group assignment:`, error);
-    throw new Error(`Error checking group assignment: ${error.message}`);
-  }
-};
-
-
-
-export const getFacilitiesHasDefaultGroupsBySchool = async (campus, userId) => {
+export const getFacilitiesHasDefaultGroupsForStudent = async () => {
   try {
     const facilities = await FacilitiesModel.findAll({
-      where: { campus_id: campus },
       include: [
+        {
+          model: campusModel,  
+          as: 'campus', 
+          attributes: ['id', 'name'],
+          required: true, 
+        },
         {
           model: Users,
           as: 'manager',
@@ -895,15 +862,15 @@ export const getFacilitiesHasDefaultGroupsBySchool = async (campus, userId) => {
       facilities.map(async (facility) => {
         const facilityDefaultGroups = facility.facilitydefaultGroups || [];
 
-        // Check if there are any default groups
+        
         if (facilityDefaultGroups.length === 0) {
-          return null; // Ignore facilities without default groups
+          return null; 
         }
 
         const groupsWithObjects = await Promise.all(
           facilityDefaultGroups.map(async (defaultGroup) => {
             if (!defaultGroup.groups || defaultGroup.groups.length === 0) {
-              return defaultGroup; // Return the default group even if it has no groups
+              return defaultGroup; 
             }
 
             const groupsWithObjects = await Promise.all(
@@ -995,7 +962,178 @@ export const getFacilitiesHasDefaultGroupsBySchool = async (campus, userId) => {
       })
     );
 
-    // Filter out any null results (facilities without default groups)
+   
+    return facilitiesWithDefaultGroups.filter(facility => facility !== null);
+  } catch (error) {
+    throw new Error(`Error getting facilities: ${error.message}`);
+  }
+};
+
+
+export const isGroupAssignedToAnyFacility = async (user, groupId) => {
+  try {
+    const campusId = user.campus;
+    const conflictingFacilities = await FacilitiesModel.findAll({
+      where: {
+        campus_id: campusId,
+      },
+    });
+
+    if (!conflictingFacilities || conflictingFacilities.length === 0) {
+      return false;
+    }
+
+    const hasGroupAssigned = conflictingFacilities.some((facility) => {
+      const defaultGroups = facility.defaultGroups;
+      return defaultGroups && defaultGroups.includes(groupId);
+    });
+
+    return hasGroupAssigned;
+  } catch (error) {
+    console.error(`Error checking group assignment:`, error);
+    throw new Error(`Error checking group assignment: ${error.message}`);
+  }
+};
+
+export const getFacilitiesHasDefaultGroupsBySchool = async (campus, userId) => {
+  try {
+    const facilities = await FacilitiesModel.findAll({
+      where: { campus_id: campus },
+      include: [
+        {
+          model: Users,
+          as: 'manager',
+          attributes: ['id', 'firstname', 'lastname', 'email', 'phone'],
+          required: false,
+        },
+        {
+          model: Users,
+          as: 'technician',
+          attributes: ['id', 'firstname', 'lastname', 'email', 'phone'],
+          required: false,
+        },
+        {
+          model: DefaultGroupModel,
+          as: 'facilitydefaultGroups',
+          attributes: ['id', 'time', 'trimester', 'groups'],
+          required: false,
+        },
+      ],
+    });
+
+    if (!facilities || facilities.length === 0) {
+      return null;
+    }
+
+    const facilitiesWithDefaultGroups = await Promise.all(
+      facilities.map(async (facility) => {
+        const facilityDefaultGroups = facility.facilitydefaultGroups || [];
+
+        if (facilityDefaultGroups.length === 0) {
+          return null; 
+        }
+
+        const groupsWithObjects = await Promise.all(
+          facilityDefaultGroups.map(async (defaultGroup) => {
+            if (!defaultGroup.groups || defaultGroup.groups.length === 0) {
+              return defaultGroup; 
+            }
+
+            const groupsWithObjects = await Promise.all(
+              defaultGroup.groups.map(async (groupId) => {
+                const group = await GroupModel.findOne({
+                  attributes: ['id', 'name', 'size'],
+                  where: { id: groupId },
+                  include: [
+                    {
+                      model: IntakeModel,
+                      include: [
+                        {
+                          model: ProgramModel,
+                          attributes: ['id', 'name'],
+                          include: [
+                            {
+                              model: DepartmentModel,
+                              attributes: ['id', 'name'],
+                              include: [
+                                {
+                                  model: SchoolModel,
+                                  attributes: ['id', 'name'],
+                                  include: [
+                                    {
+                                      model: CollegeModel,
+                                      attributes: ['id', 'name', 'abbreviation'],
+                                      include: [
+                                        {
+                                          model: CollegeModel,
+                                          attributes: ['id', 'name', 'abbreviation'],
+                                        },
+                                      ],
+                                    },
+                                  ],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                });
+
+                return {
+                  id: group.id,
+                  name: group.name,
+                  size: group.size,
+                  intake: group.Intake
+                    ? {
+                        id: group.Intake.id,
+                        name: group.Intake.displayName,
+                        program: group.Intake.program
+                          ? {
+                              id: group.Intake.program.id,
+                              name: group.Intake.program.name,
+                              department: group.Intake.program.department
+                                ? {
+                                    id: group.Intake.program.department.id,
+                                    name: group.Intake.program.department.name,
+                                    school: group.Intake.program.department.School
+                                      ? {
+                                          id: group.Intake.program.department.School.id,
+                                          name: group.Intake.program.department.School.name,
+                                          college: group.Intake.program.department.School.college
+                                            ? {
+                                                id: group.Intake.program.department.School.college.id,
+                                                name: group.Intake.program.department.School.college.name,
+                                                abbreviation: group.Intake.program.department.School.college.abbreviation,
+                                              }
+                                            : null,
+                                        }
+                                      : null,
+                                  }
+                                : null,
+                            }
+                          : null,
+                    }
+                  : null,
+                };
+              })
+            );
+
+            return {
+              ...defaultGroup.toJSON(),
+              groups: groupsWithObjects,
+            };
+          })
+        );
+
+        return {
+          ...facility.toJSON(),
+          facilitydefaultGroups: groupsWithObjects,
+        };
+      })
+    );
+
     return facilitiesWithDefaultGroups.filter(facility => facility !== null);
   } catch (error) {
     throw new Error(`Error getting facilities: ${error.message}`);

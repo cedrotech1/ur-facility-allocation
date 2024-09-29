@@ -14,7 +14,6 @@ import {
   approveTOpendingbookings,
   getprePendingBookings,
   getOnepreBookingWithDetails,
-  
 } from "../services/bookingService";
 import { getOneSchoolWithDetails } from "../services/schoolService";
 import { getOneFacility } from "../services/facilityService.js";
