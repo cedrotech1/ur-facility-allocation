@@ -9,16 +9,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      startYear: {
+      Year: {
         type: Sequelize.STRING,
       },
-      startMonth: {
-        type: Sequelize.STRING,
-      },
-      endYear: {
-        type: Sequelize.STRING,
-      },
-      endMonth: {
+      Month: {
         type: Sequelize.STRING,
       },
       program_ID: {

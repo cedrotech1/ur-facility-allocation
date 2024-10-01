@@ -34,6 +34,31 @@ export const campusWithAllController = async (req, res) => {
   }
 };
 
+export const campusWithAllControllerForSTUDENT = async (req, res) => {
+  try {
+    // const campusid=req.user.campus;
+
+    let data = await campusWithAll();
+    if (!data) {
+      return res.status(404).json({
+        message: "Campus not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Campus retrieved successfully",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
 export const addCampusController = async (req, res) => {
   try {
     if (req.user.role !== "superadmin") {

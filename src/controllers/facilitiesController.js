@@ -376,7 +376,6 @@ export const removeOneMaterial = async (req, res) => {
 };
 export const assignDefaultGroupsToFacility = async (req, res) => {
   try {
-    // Authorization checks
     if (
       req.user.role === "user" &&
       !checkprivileges(req.user.privileges, "manage-facilities") &&
@@ -411,7 +410,6 @@ export const assignDefaultGroupsToFacility = async (req, res) => {
       });
     }
 
-    // Validate group sizes
     const isValid = await Promise.all(
       groups.map(async (group) => {
         const groupDetails = await get_Group(group);
@@ -419,23 +417,19 @@ export const assignDefaultGroupsToFacility = async (req, res) => {
       })
     );
 
-    // Check if all groups are valid
     if (!isValid.every(Boolean)) {
       return res.status(400).json({
         message: "One or more groups exceed the facility size",
       });
     }
 
-    // Create DefaultGroup only once
-    const newDefaultGroup = await assignDefaultGroupsNew(req.params.id, { time, trimester, groups });
+    const result = await assignDefaultGroupsNew(req.params.id, { time, trimester, groups });
 
-    // If `sendEmail` is true, send notification emails
-    if (sendEmail) {
-      await Promise.all(
-        groups.map(async (group) => {
-          const groupDetails = await get_Group(group);
-
-          if (req.body.sendEmail === true) {
+    if (result.success) {
+      if (sendEmail) {
+        await Promise.all(
+          groups.map(async (group) => {
+            const groupDetails = await get_Group(group);
             if (groupDetails?.cp != null) {
               existingFacility.group = groupDetails;
               await new Email(
@@ -446,40 +440,38 @@ export const assignDefaultGroupsToFacility = async (req, res) => {
                 existingFacility
               ).sendCPNotification();
             }
-
-            
-          }
-        })
-      );
-    }
-
-    if (req.body.sendEmail === true) {
-      const facility = await getOneFacility(req.params.id);
-      // console.log(facility);
-      const schoolId = facility.facilitydefaultGroups?.[0]?.groups?.[0]?.intake?.program?.department?.school?.id;
-      
-      if (schoolId) {
-        let school = await getOneSchoolWithDetails(schoolId);
-        // console.log(school);
-        if (school?.schooldean) {
-          await new Email(
-            school.schooldean,
-            null,
-            null,
-            null,
-            existingFacility
-          ).sendAssignedDean();
-        }
-      } else {
-        console.log('School ID not found');
+          })
+        );
       }
-      
-    }
 
-    return res.status(200).json({
-      message: "Default groups added successfully",
-      newDefaultGroup,
-    });
+      if (sendEmail) {
+        const facility = await getOneFacility(req.params.id);
+        const schoolId = facility.facilitydefaultGroups?.[0]?.groups?.[0]?.intake?.program?.department?.school?.id;
+
+        if (schoolId) {
+          const school = await getOneSchoolWithDetails(schoolId);
+          if (school?.schooldean) {
+            await new Email(
+              school.schooldean,
+              null,
+              null,
+              null,
+              existingFacility
+            ).sendAssignedDean();
+          }
+        }
+      }
+
+      return res.status(200).json({
+        message: "Default groups added successfully",
+        newDefaultGroup: result.defaultGroup,
+      });
+    } else {
+      // If no new groups were assigned, return a 400 status code with the message
+      return res.status(400).json({
+        message: result.message,
+      });
+    }
   } catch (error) {
     console.error("Error assigning default groups:", error);
     return res.status(500).json({
@@ -488,6 +480,7 @@ export const assignDefaultGroupsToFacility = async (req, res) => {
     });
   }
 };
+
 export const removeOneDefaultGroupFromFacility = async (req, res) => {
   try {
     if (

@@ -14,10 +14,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   Intake.init(
     {
-      startYear: DataTypes.STRING,
-      startMonth: DataTypes.STRING,
-      endYear: DataTypes.STRING,
-      endMonth: DataTypes.STRING,
+      Year: DataTypes.STRING,
+      Month: DataTypes.STRING,
       program_ID: DataTypes.STRING,
       displayName: DataTypes.STRING,
       size: { type: DataTypes.INTEGER, defaultValue: 0 },

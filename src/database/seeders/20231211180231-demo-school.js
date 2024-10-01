@@ -7,7 +7,6 @@ module.exports = {
       {
         name: "Business",
         college_ID: "1",
-        dean: "5",
         createdAt: new Date(),
         updatedAt: new Date(),
       },

@@ -586,32 +586,60 @@ export const assignDefaultGroups = async (id, groups) => {
 };
 
 
-
 export const assignDefaultGroupsNew = async (facilityId, { time, trimester, groups }) => {
   try {
-    
-    let defaultGroup = await DefaultGroupModel.findOne({
-      where: { facilityId, time, trimester }
+    // Get all existing assignments for the given facility and trimester
+    const existingAssignments = await DefaultGroupModel.findAll({
+      where: { facilityId, trimester },
+      attributes: ['time', 'groups']
     });
 
-    if (defaultGroup) {
-      const existingGroups = defaultGroup.groups || [];
-      const updatedGroups = [...new Set([...existingGroups, ...groups])]; // Use Set to avoid duplicates
-
-      await DefaultGroupModel.update(
-        { groups: updatedGroups },
-        { where: { id: defaultGroup.id } }
+    // Check if there's a conflict with "full day" or "morning" or "afternoon"
+    if (time === 'full day') {
+      const conflictingTimes = existingAssignments.filter(entry =>
+        ['morning', 'afternoon'].includes(entry.time)
       );
-    } else {
-      defaultGroup = await DefaultGroupModel.create({
-        facilityId,
-        time,
-        trimester,
-        groups
-      });
+      if (conflictingTimes.length > 0) {
+        return { success: false, message: 'Cannot assign full day because morning or afternoon is already booked in the same trimester.' };
+      }
+    } else if (['morning', 'afternoon'].includes(time)) {
+      const fullDayAssigned = existingAssignments.find(entry => entry.time === 'full day');
+      if (fullDayAssigned) {
+        return { success: false, message: `Cannot assign ${time} because full day is already booked in the same trimester.` };
+      }
     }
 
-    return defaultGroup;
+    // Collect already assigned groups to avoid duplicates
+    const assignedGroups = existingAssignments.flatMap(entry => entry.groups || []);
+    const newGroups = groups.filter(group => !assignedGroups.includes(group));
+
+    if (newGroups.length > 0) {
+      // Check if a default group exists for the given time and trimester
+      let defaultGroup = await DefaultGroupModel.findOne({
+        where: { facilityId, time, trimester }
+      });
+
+      if (defaultGroup) {
+        // Combine existing and new groups to update the record
+        const updatedGroups = [...defaultGroup.groups, ...newGroups];
+        await DefaultGroupModel.update(
+          { groups: updatedGroups },
+          { where: { id: defaultGroup.id } }
+        );
+      } else {
+        // Create a new default group entry if it doesn't exist
+        defaultGroup = await DefaultGroupModel.create({
+          facilityId,
+          time,
+          trimester,
+          groups: newGroups
+        });
+      }
+
+      return { success: true, defaultGroup };
+    } else {
+      return { success: false, message: 'No new groups to assign. Some or all groups are already assigned to this facility.' };
+    }
   } catch (error) {
     throw new Error(`Error assigning default groups: ${error.message}`);
   }

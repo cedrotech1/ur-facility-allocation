@@ -47,7 +47,6 @@ export const getIntakeById = async (id) => {
   return intake;
 };
 
-
 export const allIntakes = async () => {
   const allIntakes = await Intake.findAll({
     include: [
@@ -84,25 +83,18 @@ export const allIntakes = async () => {
         ],
       },
     ],
-    // Removing raw: true allows Sequelize to return nested data
   });
   return allIntakes;
 };
 
 
-
-
-
 export const checkExistingIntake = async (intakeData) => {
   try {
-    const { startYear, startMonth, endYear, endMonth, program_ID } = intakeData;
-
+    const { Year, Month, program_ID } = intakeData;
     const existingIntake = await Intake.findOne({
       where: {
-        startYear,
-        startMonth,
-        endYear,
-        endMonth,
+        Year,
+        Month,
         program_ID
       },
     });
@@ -180,7 +172,7 @@ export const getProgramIntakes = async (program_ID) => {
 
 export const getProgramIntakesByYear = async (program_ID, year) => {
   const programIntakes = await Intake.findAll({
-    where: { program_ID, startYear: year },
+    where: { program_ID, Year: year },
     include: [
       {
         model: programModel,
@@ -222,7 +214,7 @@ export const getProgramIntakesByYear = async (program_ID, year) => {
 
 export const getProgramIntakesByMonth = async (program_ID, month) => {
   const programIntakes = await Intake.findAll({
-    where: { program_ID, startMonth: month },
+    where: { program_ID,Month: month },
     include: [
       {
         model: programModel,
@@ -264,7 +256,7 @@ export const getProgramIntakesByMonth = async (program_ID, month) => {
 
 export const getProgramIntakesByYearMonth = async (program_ID, year, month) => {
   const programIntakes = await Intake.findAll({
-    where: { program_ID, startYear: year, startMonth: month },
+    where: { program_ID,Year: year,Month: month },
     include: [
       {
         model: programModel,
@@ -307,33 +299,31 @@ export const getProgramIntakesByYearMonth = async (program_ID, year, month) => {
 export const getProgramIntakesByYearMonthRange = async (
   program_ID,
   year,
-  startMonth,
-  endMonth
+  Month,
+
 ) => {
   const programIntakes = await Intake.findAll({
-    where: { program_ID, startYear: year, startMonth: [startMonth, endMonth] },
+    where: { program_ID,Year: year, Month: [Month,Month] },
   });
   return programIntakes;
 };
 
 export const getProgramIntakesByYearRange = async (
   program_ID,
-  startYear,
-  endYear
+  Year,
 ) => {
   const programIntakes = await Intake.findAll({
-    where: { program_ID, startYear: [startYear, endYear] },
+    where: { program_ID, Year: [Year,Year] },
   });
   return programIntakes;
 };
 
 export const getProgramIntakesByMonthRange = async (
   program_ID,
-  startMonth,
-  endMonth
+  Month,
 ) => {
   const programIntakes = await Intake.findAll({
-    where: { program_ID, startMonth: [startMonth, endMonth] },
+    where: { program_ID, startMonth: [Month,Month] },
   });
   return programIntakes;
 };

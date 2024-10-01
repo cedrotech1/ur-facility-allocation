@@ -6,23 +6,19 @@ module.exports = {
       "Intakes",
       [
         {
-          startYear: "2022",
-          startMonth: "January",
-          endYear: "2023",
-          endMonth: "December",
+          Year: "2022",
+          Month: "January",
           program_ID: "1", // Example program ID
-          displayName: "2022 january - 2023 december BIT",
+          displayName: "2022 january -  BIT",
           size: 200,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
-          startYear: "2023",
-          startMonth: "February",
-          endYear: "2024",
-          endMonth: "November",
+          Year: "2023",
+          Month: "February",
           program_ID: "2", // Another example program ID
-          displayName: "2023 february - 2024 november MDE",
+          displayName: "2023 february - MDE",
           size: 300,
           createdAt: new Date(),
           updatedAt: new Date(),

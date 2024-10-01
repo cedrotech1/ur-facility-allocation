@@ -775,6 +775,27 @@ const options = {
         },
       },
     },
+
+    "/api/v1/campus/student": {
+      get: {
+        tags: ["campus"],
+        summary: "Get all campus with colleges and schools in that college for student ",
+        description: "Get all campus for student",
+        operationId: "getAllcampus_student",
+        responses: {
+          200: {
+            description: "campus retrieved successfully",
+          },
+          401: {
+            description: "Not authorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    
     "/api/v1/campus/all": {
       get: {
         tags: ["campus"],
@@ -1912,10 +1933,8 @@ const options = {
                 $ref: "#/components/schemas/intake",
               },
               example: {
-                startYear: "2021",
-                startMonth: "January",
-                endYear: "2022",
-                endMonth: "December",
+                Year: "2021",
+                Month: "January",
                 program_ID: "1",
                 size: "100",
               },
@@ -3340,22 +3359,15 @@ const options = {
       intake: {
         type: "object",
         properties: {
-          startYear: {
+          Year: {
             type: "string",
-            description: "intake's start year",
+            description: "intake year",
           },
-          startMonth: {
+          Month: {
             type: "string",
-            description: "intake's start month",
+            description: "intake month",
           },
-          endYear: {
-            type: "string",
-            description: "intake's end year",
-          },
-          endMonth: {
-            type: "string",
-            description: "intake's end month",
-          },
+          
           program_ID: {
             type: "string",
             description: "program's id",

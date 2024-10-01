@@ -70,7 +70,7 @@ export const campusWithAll = async () => {
                           include: [
                             {
                               model: groupModel,
-                              attributes: ["id", "name", "createdAt", "updatedAt"],
+                              attributes: ["id", "name","code","size", "createdAt", "updatedAt"],
                             },
                           ],
                         },

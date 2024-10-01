@@ -26,10 +26,8 @@ export const addIntake = async (req, res) => {
     }
     console.log(req.user.privileges)
     const requiredFields = [
-      "startYear",
-      "startMonth",
-      "endYear",
-      "endMonth",
+      "Year",
+      "Month",
       "program_ID",
     ];
     for (const field of requiredFields) {
@@ -56,7 +54,7 @@ export const addIntake = async (req, res) => {
         message: "Intake with similar details already exists",
       });
     }
-    req.body.displayName = `${req.body.startYear} ${req.body.startMonth} - ${req.body.endYear} ${req.body.endMonth} ${existingProgram.name}`;
+    req.body.displayName = `${req.body.Year} ${req.body.Month} - ${existingProgram.name}`;
     const intake = await createIntake(req.body);
     return res.status(201).send({
       success: true,
@@ -147,18 +145,12 @@ export const updateIntake = async (req, res) => {
       });
     }
     const existingIntake = await getIntakeById(req.params.id);
-    req.body.startYear = req.body.startYear
-      ? req.body.startYear
-      : existingIntake.startYear;
-    req.body.startMonth = req.body.startMonth
-      ? req.body.startMonth
-      : existingIntake.startMonth;
-    req.body.endYear = req.body.endYear
-      ? req.body.endYear
-      : existingIntake.endYear;
-    req.body.endMonth = req.body.endMonth
-      ? req.body.endMonth
-      : existingIntake.endMonth;
+    req.body.Year = req.body.Year
+      ? req.body.Year
+      : existingIntake.Year;
+    req.body.Month = req.body.Month
+      ? req.body.Month
+      : existingIntake.Month;
     req.body.program_ID = existingIntake.program_ID;
 
     if (await checkExistingIntake(req.body)) {
@@ -170,7 +162,7 @@ export const updateIntake = async (req, res) => {
 
     const existingProgram = await Oneprogram(existingIntake.program_ID);
 
-    req.body.displayName = `${req.body.startYear} ${req.body.startMonth} - ${req.body.endYear} ${req.body.endMonth} ${existingProgram.name}`;
+    req.body.displayName = `${req.body.Year} ${req.body.Month} - ${existingProgram.name}`;
     const intake = await editIntake(req.params.id, req.body);
     if (!intake) {
       return res.status(404).send({
@@ -327,25 +319,25 @@ export const getIntakesByProgramYearMonthRange = async (req, res) => {
   }
 };
 
-export const getIntakesByProgramYearRange = async (req, res) => {
-  try {
-    const intakes = await getProgramIntakesByYearRange(
-      req.params.program_ID,
-      req.params.startYear,
-      req.params.endYear
-    );
-    return res.status(200).send({
-      success: true,
-      message: "Intakes retrieved successfully",
-      intakes,
-    });
-  } catch (error) {
-    return res.status(400).send({
-      success: false,
-      message: `Error retrieving intakes: ${error.message}`,
-    });
-  }
-};
+// export const getIntakesByProgramYearRange = async (req, res) => {
+//   try {
+//     const intakes = await getProgramIntakesByYearRange(
+//       req.params.program_ID,
+//       req.params.startYear,
+//       req.params.endYear
+//     );
+//     return res.status(200).send({
+//       success: true,
+//       message: "Intakes retrieved successfully",
+//       intakes,
+//     });
+//   } catch (error) {
+//     return res.status(400).send({
+//       success: false,
+//       message: `Error retrieving intakes: ${error.message}`,
+//     });
+//   }
+// };
 
 export const getIntakesByProgramMonthRange = async (req, res) => {
   try {
