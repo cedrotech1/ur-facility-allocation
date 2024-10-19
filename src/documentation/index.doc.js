@@ -47,8 +47,8 @@ const options = {
                 $ref: "#/components/schemas/User",
               },
               example: {
-                email: "root@example.com",
-                password: "root123",
+                email: "cedrotech1@gmail.com",
+                password: "1234",
               },
             },
             required: true,
@@ -1429,10 +1429,162 @@ const options = {
                 $ref: "#/components/schemas/Facility",
               },
               example: {
-                groups: [1, 2],
-                time:"morning', 'afternoon', 'full day', 'evening', 'weekend",
-                trimester:"trimester 1",
-                sendEmail: false,
+
+                  "groups": [
+                    1,
+                    2
+                  ],
+                  "times": [
+                    {
+                      "day": "Monday",
+                      "timeInterval": "7:00 am - 12:00 am"
+                    },
+                    {
+                      "day": "Wednesday",
+                      "timeInterval": "2:00 pm - 17:00 am"
+                    },
+                    {
+                      "day": "Friday",
+                      "timeInterval": "7:00 am - 12:00 am"
+                    }
+                  ],
+                  "trimester": "trimester 1",
+                  "module": "Module Name",
+                  "lecturer": "Lecturer Name",
+                  "sendEmail": false
+                
+              },
+            },
+          },
+          required: true,
+        },
+        responses: {
+          200: {
+            description: "Facility assigned successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+          404: {
+            description: "not found",
+          },
+        },
+      },
+    },
+
+    "/api/v1/facilities/default-groups/{id}/time": {
+      put: {
+        tags: ["Facilities"],
+        summary: "edit a facility",
+        description: "edit a facility",
+        operationId: "edittimefacility",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "default group 's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+
+        requestBody: {
+          content: {
+            "application/json": {
+              example: {         
+                    "day": "Friday",
+                    "timeInterval": "full day"
+            },
+            },
+          },
+          required: true,
+        },
+        responses: {
+          201: {
+            description: "Facility edited successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+          404: {
+            description: "not found",
+          },
+        },
+      },
+    },
+    "/api/v1/facilities/delete/times/{id}": {
+      delete: {
+        tags: ["Facilities"],
+        summary: "delete time on frame",
+        description: "delete time frame",
+        operationId: "delete_time_group",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "time model's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+
+    
+        responses: {
+          201: {
+            description: "Facility edited successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+          404: {
+            description: "not found",
+          },
+        },
+      },
+    },
+    "/api/v1/facilities/{id}/defaultgroup/addgroup": {
+      put: {
+        tags: ["Facilities"],
+        summary: "add group/s to assigned a default groups on a facility",
+        description: "add group/s to assigned a default groups on a facility",
+        operationId: "updategroups",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "default group 's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Facility",
+              },
+              example: {
+                
+                  "groups": [
+                    1,
+                    2
+                  ],
+                              
               },
             },
           },
@@ -1530,6 +1682,102 @@ const options = {
           },
           404: {
             description: "not found",
+          },
+        },
+      },
+    },
+    "/api/v1/facilities/timetable": {
+      get: {
+        tags: ["Facilities"],
+        summary: "get a DefaultGroups with facilities and times",
+        description: "get a DefaultGroups",
+        operationId: "DefaultGroups",
+
+        responses: {
+          200: {
+            description: "DefaultGroups retrieved successfully",
+          },
+          201: {
+            description: "facilities retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+    "/api/v1/facilities/defaultGroups/activate/{id}": {
+      put: {
+        tags: ["Facilities"],
+        summary: "activate defout group",
+        description: "Activate a  defout group",
+        operationId: "active",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "default group 's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "User activated successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/facilities/defaultGroups/deactivate/{id}": {
+      put: {
+        tags: ["Facilities"],
+        summary: "Disactivate defout group",
+        description: "Activatate  defout groupr",
+        operationId: "Disactivate",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "default group 's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "User activated successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
           },
         },
       },

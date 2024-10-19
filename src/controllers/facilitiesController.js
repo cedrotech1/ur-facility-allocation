@@ -6,17 +6,25 @@ import {
   getOneFacility,
   updateFacility,
   removeMaterialFromFacility,
-  assignDefaultGroups,
   removeOneDefaultGroup,
   removeAllDefaultGroups,
   getFacilitiesHasDefaultGroups,
   getFacilitiesHasDefaultGroupsBySchool,
   getFacilitiesHasDefaultGroupsForStudent,
-  isGroupAssignedToAnyFacility,
   getDisactivesFacilities,
   getactivesFacilities,
-  assignDefaultGroupsNew,
+  assignDefaultGroupsWithTimes,
+  updateDefaultGroup,
+  addTimeToDefaultGroup,
+  deleteTimeById,
+  getOneDefaultGroup,
+  getDefaultGroupsWithTimes,
+  activateDefaultGroup,
+  deactivateDefaultGroup
+
 } from "../services/facilityService.js";
+
+
 import { deanschool } from '../services/schoolService.js';
 import { get_Group } from "../services/groupService";
 import { checkprivileges } from "../helpers/privileges.js";
@@ -25,6 +33,180 @@ import Email from "../utils/mailer";
 
 import { getOneSchoolWithDetails } from "../services/schoolService";
 
+export const fetchDefaultGroupsWithTimes = async (req, res) => {
+  try {
+    const TimeTable = await getDefaultGroupsWithTimes();
+    const userCampusId = req.user.campus;
+    const filteredTimeTable = TimeTable.filter(item => item.defaultgroupTime.facility.campus_id === userCampusId);
+
+    if (filteredTimeTable.length > 0) {
+      return res.status(200).json({
+        message: "Facility retrieved successfully",
+        TimeTable: filteredTimeTable,
+      });
+    }
+  
+    return res.status(404).json({
+      message: "No facilities found for the user's campus",
+      TimeTable: [],
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+
+export const assignDefaultGroupsToFacility = async (req, res) => {
+  try {
+    if (
+      req.user.role === "user" &&
+      !checkprivileges(req.user.privileges, "manage-facilities") &&
+      !checkprivileges(req.user.privileges, "manage-time-table")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized to assign default groups",
+      });
+    }
+
+    const existingFacility = await getOneFacility(req.params.id);
+    if (!existingFacility) {
+      return res.status(400).json({
+        success: false,
+        message: "Facility does not exist",
+      });
+    }
+
+    const { module, lecturer, trimester, groups, times } = req.body;
+
+    if (!module || !lecturer || !trimester || !groups || !times || !Array.isArray(times) || times.length === 0) {
+      return res.status(400).json({
+        message: "module, lecturer, trimester, groups, and times are required",
+      });
+    }
+
+    const isValid = await Promise.all(
+      groups.map(async (group) => {
+        const groupDetails = await get_Group(group);
+        return groupDetails.size <= existingFacility.size;
+      })
+    );
+
+    if (!isValid.every(Boolean)) {
+      return res.status(400).json({
+        message: "One or more groups exceed the facility size",
+      });
+    }
+
+
+    const result = await assignDefaultGroupsWithTimes(req.params.id, {
+      module, lecturer, trimester, groups, times,
+    });
+
+    if (result.success) {
+      return res.status(200).json({
+        message: result.message,
+        newDefaultGroup: result.defaultGroup,
+      });
+    } else {
+      return res.status(400).json({
+        message: result.message,
+      });
+    }
+  } catch (error) {
+    console.error("Error assigning default groups:", error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+export const updateDefaultGroups = async (req, res) => {
+  try {
+    if (
+      req.user.role === "user" &&
+      !checkprivileges(req.user.privileges, "manage-facilities") &&
+      !checkprivileges(req.user.privileges, "manage-time-table")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized to update default groups",
+      });
+    }
+
+    const { groups } = req.body;
+
+    if (!groups || !Array.isArray(groups)) {
+      return res.status(400).json({
+        message: "Groups are required and must be an array",
+      });
+    }
+    const defaultGroup = await getOneDefaultGroup(req.params.id);
+
+    if (!defaultGroup) {
+      return res.status(404).json({
+        message: "Default group not found",
+      });
+    }
+    const facilityId = defaultGroup.facilityId;
+    const facility = await getOneFacility(facilityId);
+
+    if (!facility) {
+      return res.status(404).json({
+        message: "Facility not found",
+      });
+    }
+
+    const facilitySize = facility.size;
+    const existingDefaultGroups = facility.facilitydefaultGroups || [];
+    const existingGroupsTotalSize = existingDefaultGroups.reduce((total, defaultGroup) => {
+      const groupSizes = defaultGroup.groups.reduce((sum, group) => sum + group.size, 0);
+      return total + groupSizes;
+    }, 0);
+
+
+    const newGroupsTotalSize = await Promise.all(
+      groups.map(async (groupId) => {
+        const groupDetails = await get_Group(groupId); 
+        return groupDetails.size;
+      })
+    ).then(sizes => sizes.reduce((sum, size) => sum + size, 0));
+
+    const totalSizeAfterAdding = existingGroupsTotalSize + newGroupsTotalSize;
+
+    
+    if (totalSizeAfterAdding > facilitySize) {
+      return res.status(400).json({
+        message: `Facility size exceeded. Capacity: ${facilitySize}, Current: ${existingGroupsTotalSize}, Adding: ${newGroupsTotalSize}`,
+
+      });
+    }
+
+    const result = await updateDefaultGroup(req.params.id, groups);
+
+    if (result.success) {
+      return res.status(200).json({
+        message: result.message,
+        updatedDefaultGroup: result.updatedDefaultGroup,
+      });
+    } else {
+      return res.status(400).json({
+        message: result.message,
+      });
+    }
+
+  } catch (error) {
+    console.error("Error updating default groups:", error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
 export const createFacility = async (req, res) => {
   if (
     req.user.role === "user" &&
@@ -190,7 +372,6 @@ export const getAllFacilities = async (req, res) => {
     });
   }
 };
-
 export const deleteOneFacility = async (req, res) => {
   try {
     if (!checkprivileges(req.user.privileges, "manage-facilities")) {
@@ -374,113 +555,6 @@ export const removeOneMaterial = async (req, res) => {
     });
   }
 };
-export const assignDefaultGroupsToFacility = async (req, res) => {
-  try {
-    if (
-      req.user.role === "user" &&
-      !checkprivileges(req.user.privileges, "manage-facilities") &&
-      !checkprivileges(req.user.privileges, "manage-time-table")
-    ) {
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized to assign default groups",
-      });
-    }
-
-    const existingFacility = await getOneFacility(req.params.id);
-    if (!existingFacility) {
-      return res.status(400).json({
-        success: false,
-        message: "Facility does not exist",
-      });
-    }
-
-    if (existingFacility.campus_id !== req.user.campus) {
-      return res.status(400).json({
-        success: false,
-        message: "Facility does not exist in your campus",
-      });
-    }
-
-    const { time, trimester, groups, sendEmail } = req.body;
-
-    if (!time || !trimester || !groups || !Array.isArray(groups) || groups.length === 0) {
-      return res.status(400).json({
-        message: "time, trimester, and groups are required",
-      });
-    }
-
-    const isValid = await Promise.all(
-      groups.map(async (group) => {
-        const groupDetails = await get_Group(group);
-        return groupDetails.size <= existingFacility.size;
-      })
-    );
-
-    if (!isValid.every(Boolean)) {
-      return res.status(400).json({
-        message: "One or more groups exceed the facility size",
-      });
-    }
-
-    const result = await assignDefaultGroupsNew(req.params.id, { time, trimester, groups });
-
-    if (result.success) {
-      if (sendEmail) {
-        await Promise.all(
-          groups.map(async (group) => {
-            const groupDetails = await get_Group(group);
-            if (groupDetails?.cp != null) {
-              existingFacility.group = groupDetails;
-              await new Email(
-                groupDetails.cp,
-                null,
-                null,
-                null,
-                existingFacility
-              ).sendCPNotification();
-            }
-          })
-        );
-      }
-
-      if (sendEmail) {
-        const facility = await getOneFacility(req.params.id);
-        const schoolId = facility.facilitydefaultGroups?.[0]?.groups?.[0]?.intake?.program?.department?.school?.id;
-
-        if (schoolId) {
-          const school = await getOneSchoolWithDetails(schoolId);
-          if (school?.schooldean) {
-            await new Email(
-              school.schooldean,
-              null,
-              null,
-              null,
-              existingFacility
-            ).sendAssignedDean();
-          }
-        }
-      }
-
-      return res.status(200).json({
-        message: "Default groups added successfully",
-        newDefaultGroup: result.defaultGroup,
-      });
-    } else {
-      // If no new groups were assigned, return a 400 status code with the message
-      return res.status(400).json({
-        message: result.message,
-      });
-    }
-  } catch (error) {
-    console.error("Error assigning default groups:", error);
-    return res.status(500).json({
-      message: "Something went wrong",
-      error: error.message,
-    });
-  }
-};
-
 export const removeOneDefaultGroupFromFacility = async (req, res) => {
   try {
     if (
@@ -495,6 +569,7 @@ export const removeOneDefaultGroupFromFacility = async (req, res) => {
     }
 
     const existingFacility = await getOneFacility(req.params.id);
+  
     if (!existingFacility) {
       return res.status(400).json({
         success: false,
@@ -502,12 +577,12 @@ export const removeOneDefaultGroupFromFacility = async (req, res) => {
       });
     }
 
-    if (existingFacility.campus_id !== req.user.campus) {
-      return res.status(400).json({
-        success: false,
-        message: "Facility does not exist in your campus",
-      });
-    }
+    // if (existingFacility.campus_id !== req.user.campus) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Facility does not exist in your campus",
+    //   });
+    // }
 
     const { groupId, defaultGroupId } = req.body;
 
@@ -558,12 +633,12 @@ export const removeAllDefaultGroupsFromFacility = async (req, res) => {
       });
     }
 
-    if (existingFacility.campus_id !== req.user.campus) {
-      return res.status(400).json({
-        success: false,
-        message: "Facility does not exist in your campus",
-      });
-    }
+    // if (existingFacility.campus_id !== req.user.campus) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Facility does not exist in your campus",
+    //   });
+    // }
 
     // Call the function to remove all default groups
     await removeAllDefaultGroups(req.params.id);
@@ -584,6 +659,7 @@ export const getFacilitiesWithDefaultGroups = async (req, res) => {
       facilities=[];
     }
     return res.status(200).json({
+      success: true,
       message: "Facilities retrieved successfully",
       facilities,
     });
@@ -624,6 +700,7 @@ export const getFacilitiesWithDefaultGroupsByDean = async (req, res) => {
       });
     }
     const facilities = await getFacilitiesHasDefaultGroupsBySchool(req.user.campus, req.user.id);
+    
     let  filteredFacilities;
 
     if (!facilities || facilities.length === 0) {
@@ -659,3 +736,141 @@ export const getFacilitiesWithDefaultGroupsByDean = async (req, res) => {
     });
   }
 };
+
+export const addTimeController = async (req, res) => {
+  try {
+
+    if (
+      req.user.role === "user" &&
+      !checkprivileges(req.user.privileges, "manage-facilities") &&
+      !checkprivileges(req.user.privileges, "manage-time-table")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized to assign default groups",
+      });
+    }
+    const { day, timeInterval } = req.body; 
+    const defaultGroupId = req.params.id; 
+
+    if (!day || !timeInterval || !defaultGroupId) {
+      return res.status(400).json({
+        success: false,
+        message: "Day, timeInterval, and defaultGroupId are required.",
+      });
+    }
+
+    const result = await addTimeToDefaultGroup(day, timeInterval, defaultGroupId);
+
+    if (result.success) {
+      return res.status(201).json({
+        message: result.message,
+        newTime: result.newTime,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: result.message,
+      });
+    }
+  } catch (error) {
+    console.error("Error adding time:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteTimeController = async (req, res) => {
+  try {
+
+    if (
+      req.user.role === "user" &&
+      !checkprivileges(req.user.privileges, "manage-facilities") &&
+      !checkprivileges(req.user.privileges, "manage-time-table")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized to assign default groups",
+      });
+    }
+    const timeId = req.params.id;
+
+    if (!timeId) {
+      return res.status(400).json({
+        success: false,
+        message: "Time ID is required",
+      });
+    }
+
+    const result = await deleteTimeById(timeId);
+
+    if (result.success) {
+      return res.status(200).json({
+        message: result.message,
+      });
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: result.message,
+      });
+    }
+
+  } catch (error) {
+    console.error("Error deleting time entry:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+export const activate = async (req, res) => {
+  try {
+    if (
+      req.user.role === "user" &&
+      !checkprivileges(req.user.privileges, "manage-facilities") &&
+      !checkprivileges(req.user.privileges, "manage-time-table")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized to assign default groups",
+      });
+    }
+    const { id } = req.params;
+    const defaultGroup = await activateDefaultGroup(id);
+    return res.status(200).json({
+      message: 'DefaultGroup activated successfully',
+      defaultGroup,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const deactivate = async (req, res) => {
+  try {
+    if (
+      req.user.role === "user" &&
+      !checkprivileges(req.user.privileges, "manage-facilities") &&
+      !checkprivileges(req.user.privileges, "manage-time-table")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized to assign default groups",
+      });
+    }
+    const { id } = req.params;
+    const defaultGroup = await deactivateDefaultGroup(id);
+    return res.status(200).json({
+      message: 'DefaultGroup deactivated successfully',
+      defaultGroup,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}

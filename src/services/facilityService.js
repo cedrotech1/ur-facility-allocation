@@ -9,8 +9,322 @@ const SchoolModel = db["School"];
 const CollegeModel = db["college"];
 const DefaultGroupModel = db["DefaultGroup"]; 
 const campusModel = db["Campus"];
+const TimeModel = db["Time"];
+import sequelize, { Op } from "sequelize";
 
-import Sequelize, { Op } from "sequelize";
+export const getOneDefaultGroup = async (id) => {
+  try {
+    const defaultGroup = await DefaultGroupModel.findOne({
+      where: { id },  
+    });
+
+    return defaultGroup;
+  } catch (error) {
+    console.error('Error fetching DefaultGroup:', error);
+    throw new Error('Unable to retrieve DefaultGroup');
+  }
+};
+
+
+// export const assignDefaultGroupsWithTimes = async (facilityId, { module, lecturer, trimester, groups, times }) => {
+//   try {
+    
+//     // Ensure groups is an array of integers
+//     if (!Array.isArray(groups) || groups.some(group => typeof group !== 'number')) {
+//       throw new Error("Groups must be an array of valid integers");
+//     }
+
+//       for (const time of times) {
+//         let status="active";
+//         const conflictingTimes = await TimeModel.findAll({
+//           where: {
+//             day: time.day,  // Same day
+//             timeInterval: time.timeInterval,  // Same time interval
+//           },
+//           include: [{
+//             model: DefaultGroupModel,
+//             as: 'defaultgroupTime',  // Alias defined in the association
+//             where: {
+//               facilityId: {
+//                 [sequelize.Op.ne]: facilityId,  // Check for different facilities
+//               },
+//               status
+//             },
+//           }],
+//         });
+
+//         for (const conflictingTime of conflictingTimes) {
+//           const conflictingGroups = conflictingTime.defaultgroupTime.groups; // Get the assigned groups
+      
+//           for (const group of groups) {
+//             if (conflictingGroups.includes(group)) {
+//               return {
+//                 success: false,
+//                 message: `Conflict: Group ${group} is already assigned to another facility at ${time.timeInterval} on ${time.day}.`,
+//               };
+//             }
+//           }
+//         }
+//       }
+      
+      
+      
+
+//     // Check if any of the times conflict with existing records
+//     for (const time of times) {
+//       const conflictingTime = await TimeModel.findOne({
+//         where: {
+//           facility: facilityId,  // Check for the same facility
+//           day: time.day,  // Check for the same day
+//           timeInterval: time.timeInterval,  
+//         }
+//       });
+
+//       if (conflictingTime) {
+//         return {
+//           success: false,
+//           message: `Conflict: The ${time.timeInterval} on ${time.day} is already assigned to another group.`,
+//         };
+//       }
+//     }
+
+//     // Create DefaultGroup record
+//     const status="active";
+//     const defaultGroup = await DefaultGroupModel.create({
+//       facilityId,
+//       module,
+//       lecturer,
+//       trimester,
+//       groups, 
+//       status
+//     });
+
+//     // Insert Time records individually
+//     for (const time of times) {
+//       await TimeModel.create({
+//         defaultgroupid: defaultGroup.id, // Use the id of the newly created DefaultGroup
+//         day: time.day,
+//         timeInterval: time.timeInterval,
+//         facility: facilityId,
+//       });
+//     }
+
+//     return {
+//       success: true,
+//       defaultGroup,
+//       message: "Default groups and time intervals added successfully",
+//     };
+//   } catch (error) {
+//     console.error("Error assigning default groups:", error);
+//     return {
+//       success: false,
+//       message: error.message,
+//     };
+//   }
+// };
+
+
+export const assignDefaultGroupsWithTimes = async (facilityId, { module, lecturer, trimester, groups, times }) => {
+  try {
+    
+    // Ensure groups is an array of integers
+    if (!Array.isArray(groups) || groups.some(group => typeof group !== 'number')) {
+      throw new Error("Groups must be an array of valid integers");
+    }
+
+    // Check for conflicts with other facilities for the same time and group
+    for (const time of times) {
+      const conflictingTimes = await TimeModel.findAll({
+        where: {
+          day: time.day,  // Same day
+          timeInterval: time.timeInterval,  // Same time interval
+        },
+        include: [{
+          model: DefaultGroupModel,
+          as: 'defaultgroupTime',  // Alias defined in the association
+          where: {
+            facilityId: {
+              [sequelize.Op.ne]: facilityId,  // Check for different facilities
+            },
+            status: 'active',  // Only consider active groups
+          },
+        }],
+      });
+
+      for (const conflictingTime of conflictingTimes) {
+        const conflictingGroups = conflictingTime.defaultgroupTime.groups; // Get the assigned groups
+        
+        // Check for any overlapping groups
+        for (const group of groups) {
+          if (conflictingGroups.includes(group)) {
+            return {
+              success: false,
+              message: `Conflict: Group ${group} is already assigned to another facility at ${time.timeInterval} on ${time.day}.`,
+            };
+          }
+        }
+      }
+    }
+
+    // Check for conflicts with the same facility and same time
+    for (const time of times) {
+      const conflictingTime = await TimeModel.findOne({
+        where: {
+          facility: facilityId,  // Check for the same facility
+          day: time.day,  // Check for the same day
+          timeInterval: time.timeInterval,  
+        },
+        include: [{
+          model: DefaultGroupModel,
+          as: 'defaultgroupTime',
+          where: {
+            status: 'active',  // Only consider active groups for the same facility
+          }
+        }]
+      });
+
+      if (conflictingTime) {
+        return {
+          success: false,
+          message: `Conflict: The ${time.timeInterval} on ${time.day} is already assigned to another active group.`,
+        };
+      }
+    }
+
+    // Create DefaultGroup record
+    const defaultGroup = await DefaultGroupModel.create({
+      facilityId,
+      module,
+      lecturer,
+      trimester,
+      groups, 
+      status: 'active',  // Set default status as active
+    });
+
+    // Insert Time records individually
+    for (const time of times) {
+      await TimeModel.create({
+        defaultgroupid: defaultGroup.id, // Use the id of the newly created DefaultGroup
+        day: time.day,
+        timeInterval: time.timeInterval,
+        facility: facilityId,
+      });
+    }
+
+    return {
+      success: true,
+      defaultGroup,
+      message: "Default groups and time intervals added successfully",
+    };
+  } catch (error) {
+    console.error("Error assigning default groups:", error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const updateDefaultGroup = async (defaultGroupId, groups) => {
+  try {
+    // Ensure groups is an array of integers
+    if (!Array.isArray(groups) || groups.some(group => typeof group !== 'number')) {
+      throw new Error("Groups must be an array of valid integers");
+    }
+
+    // Fetch the existing DefaultGroup by ID and include the related time schedules
+    const existingDefaultGroup = await DefaultGroupModel.findOne({
+      where: { id: defaultGroupId },
+      include: [
+        {
+          model: TimeModel,
+          as: 'defaultgroupidTimes',  // Alias for the associated time records
+        },
+      ],
+    });
+
+    if (!existingDefaultGroup) {
+      throw new Error("Default group does not exist");
+    }
+
+    // Extract facilityId and defaultgroupidTimes
+    const { facilityId, defaultgroupidTimes = [] } = existingDefaultGroup;
+
+    // Ensure defaultgroupidTimes is an array
+    if (!Array.isArray(defaultgroupidTimes)) {
+      throw new Error("Invalid time schedule format");
+    }
+
+    // Check for time conflicts with the groups being added
+    for (const time of defaultgroupidTimes) {
+      const { day, timeInterval } = time;
+
+      // Check if the groups are assigned to other default groups with conflicting times
+      const conflictingGroups = await DefaultGroupModel.findAll({
+        include: [{
+          model: TimeModel,
+          as: 'defaultgroupidTimes',
+          where: {
+            day,
+            timeInterval,
+          },
+        }],
+        where: {
+          id: {
+            [sequelize.Op.ne]: defaultGroupId, // Exclude the current group
+          },
+        },
+      });
+
+      // Check if any conflicting groups are found
+      for (const group of conflictingGroups) {
+        // Assuming `groups` is an array stored directly on the DefaultGroup instance
+        const groupIds = group.groups; // Ensure you have this field defined on your model
+
+        // Check if any of the new groups conflict with existing groups in the conflicting time
+        for (const newGroup of groups) {
+          if (groupIds && groupIds.includes(newGroup)) {
+            return {
+              success: false,
+              message: `Conflict: Group ${newGroup} is already assigned to another default group at ${timeInterval} on ${day}.`,
+            };
+          }
+        }
+      }
+    }
+
+    // Merge existing groups with the new ones, avoiding duplicates
+    const updatedGroups = [...new Set([...existingDefaultGroup.groups, ...groups])];
+
+    // Update the DefaultGroup with the new groups
+    existingDefaultGroup.groups = updatedGroups;
+    await existingDefaultGroup.save();
+
+    return {
+      success: true,
+      message: "Default groups updated successfully",
+      updatedDefaultGroup: existingDefaultGroup,
+    };
+
+  } catch (error) {
+    console.error("Error updating default groups:", error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const extractTimeData = (data) => {
+    // Extract and return the time data you need
+    return [
+        { day: 'Monday', timeInterval: '08:00-10:00' },
+        { day: 'Tuesday', timeInterval: '10:00-12:00' },
+        // Add more time data based on your logic
+    ];
+};
+
+
 
 export const checkExistingFacility = async (id) => {
   return await FacilitiesModel.findOne({
@@ -275,6 +589,12 @@ export const getFacilities = async (campus) => {
           attributes: ["id", "firstname", "lastname", "email", "phone"],
           required: false,
         },
+        {
+          model: TimeModel,
+          as: "timeOccupied",
+          attributes: ["day", "timeInterval"],
+          required: false,
+        },
       ],
     });
     if (!facilities || facilities.length === 0) {
@@ -407,6 +727,137 @@ export const deleteFacility = async (id) => {
   return null;
 };
 
+// export const getOneFacility = async (id) => {
+//   try {
+//     const facility = await FacilitiesModel.findOne({
+//       where: { id },
+//       include: [
+//         {
+//           model: Users,
+//           as: 'manager',
+//           attributes: ['id', 'firstname', 'lastname', 'email', 'phone'],
+//           required: false,
+//         },
+//         {
+//           model: Users,
+//           as: 'technician',
+//           attributes: ['id', 'firstname', 'lastname', 'email', 'phone'],
+//           required: false,
+//         },
+//         {
+//           model: DefaultGroupModel,
+//           as: 'facilitydefaultGroups',
+//           attributes: ['id', 'time', 'trimester', 'groups'],
+//           required: false,
+//         },
+//       ],
+//     });
+
+//     if (!facility) {
+//       return null;
+//     }
+
+//     const defaultGroupsWithDetails = await Promise.all(
+//       facility.facilitydefaultGroups.map(async (defaultGroup) => {
+//         if (!defaultGroup.groups || defaultGroup.groups.length === 0) {
+//           return defaultGroup;
+//         }
+
+//         const groupsWithObjects = await Promise.all(
+//           defaultGroup.groups.map(async (groupId) => {
+//             const group = await GroupModel.findOne({
+//               attributes: ['id', 'name', 'size'],
+//               where: { id: groupId },
+//               include: [
+//                 {
+//                   model: IntakeModel,
+//                   include: [
+//                     {
+//                       model: ProgramModel,
+//                       attributes: ['id', 'name'],
+//                       include: [
+//                         {
+//                           model: DepartmentModel,
+//                           attributes: ['id', 'name'],
+//                           include: [
+//                             {
+//                               model: SchoolModel,
+//                               attributes: ['id', 'name'],
+//                               include: [
+//                                 {
+//                                   model: CollegeModel,
+//                                   attributes: ['id', 'name', 'abbreviation'],
+//                                 },
+//                               ],
+//                             },
+//                           ],
+//                         },
+//                       ],
+//                     },
+//                   ],
+//                 },
+//               ],
+//             });
+
+//             return {
+//               id: group.id,
+//               name: group.name,
+//               size: group.size,
+//               intake: group.Intake
+//                 ? {
+//                     id: group.Intake.id,
+//                     name: group.Intake.displayName,
+//                     program: group.Intake.program
+//                       ? {
+//                           id: group.Intake.program.id,
+//                           name: group.Intake.program.name,
+//                           department: group.Intake.program.department
+//                             ? {
+//                                 id: group.Intake.program.department.id,
+//                                 name: group.Intake.program.department.name,
+//                                 school: group.Intake.program.department.School
+//                                   ? {
+//                                       id: group.Intake.program.department.School.id,
+//                                       name: group.Intake.program.department.School.name,
+//                                       college: group.Intake.program.department.School.college
+//                                         ? {
+//                                             id: group.Intake.program.department.School.college.id,
+//                                             name: group.Intake.program.department.School.college.name,
+//                                             abbreviation: group.Intake.program.department.School.college.abbreviation,
+//                                           }
+//                                         : null,
+//                                     }
+//                                   : null,
+//                               }
+//                             : null,
+//                       }
+//                     : null,
+//                   }
+//                 : null,
+//             };
+//           })
+//         );
+
+//         return {
+//           ...defaultGroup.toJSON(),
+//           groups: groupsWithObjects,
+//         };
+//       })
+//     );
+
+//     return {
+//       ...facility.toJSON(),
+//       facilitydefaultGroups: defaultGroupsWithDetails,
+//     };
+//   } catch (error) {
+//     throw new Error(`Error getting facility: ${error.message}`);
+//   }
+// };
+
+
+
+
+
 export const getOneFacility = async (id) => {
   try {
     const facility = await FacilitiesModel.findOne({
@@ -425,10 +876,21 @@ export const getOneFacility = async (id) => {
           required: false,
         },
         {
+          model: TimeModel,
+          as: "timeOccupied",
+          attributes: ["day", "timeInterval"],
+          required: false,
+        },
+        {
           model: DefaultGroupModel,
           as: 'facilitydefaultGroups',
-          attributes: ['id', 'time', 'trimester', 'groups'],
+          attributes: ['id', 'module', 'lecturer', 'trimester' ,'status','groups'],
           required: false,
+          include: [
+            {
+              model: TimeModel,
+              as: "defaultgroupidTimes",
+            },]
         },
       ],
     });
@@ -585,67 +1047,6 @@ export const assignDefaultGroups = async (id, groups) => {
   }
 };
 
-
-export const assignDefaultGroupsNew = async (facilityId, { time, trimester, groups }) => {
-  try {
-    // Get all existing assignments for the given facility and trimester
-    const existingAssignments = await DefaultGroupModel.findAll({
-      where: { facilityId, trimester },
-      attributes: ['time', 'groups']
-    });
-
-    // Check if there's a conflict with "full day" or "morning" or "afternoon"
-    if (time === 'full day') {
-      const conflictingTimes = existingAssignments.filter(entry =>
-        ['morning', 'afternoon'].includes(entry.time)
-      );
-      if (conflictingTimes.length > 0) {
-        return { success: false, message: 'Cannot assign full day because morning or afternoon is already booked in the same trimester.' };
-      }
-    } else if (['morning', 'afternoon'].includes(time)) {
-      const fullDayAssigned = existingAssignments.find(entry => entry.time === 'full day');
-      if (fullDayAssigned) {
-        return { success: false, message: `Cannot assign ${time} because full day is already booked in the same trimester.` };
-      }
-    }
-
-    // Collect already assigned groups to avoid duplicates
-    const assignedGroups = existingAssignments.flatMap(entry => entry.groups || []);
-    const newGroups = groups.filter(group => !assignedGroups.includes(group));
-
-    if (newGroups.length > 0) {
-      // Check if a default group exists for the given time and trimester
-      let defaultGroup = await DefaultGroupModel.findOne({
-        where: { facilityId, time, trimester }
-      });
-
-      if (defaultGroup) {
-        // Combine existing and new groups to update the record
-        const updatedGroups = [...defaultGroup.groups, ...newGroups];
-        await DefaultGroupModel.update(
-          { groups: updatedGroups },
-          { where: { id: defaultGroup.id } }
-        );
-      } else {
-        // Create a new default group entry if it doesn't exist
-        defaultGroup = await DefaultGroupModel.create({
-          facilityId,
-          time,
-          trimester,
-          groups: newGroups
-        });
-      }
-
-      return { success: true, defaultGroup };
-    } else {
-      return { success: false, message: 'No new groups to assign. Some or all groups are already assigned to this facility.' };
-    }
-  } catch (error) {
-    throw new Error(`Error assigning default groups: ${error.message}`);
-  }
-};
-
-
 export const removeOneDefaultGroup = async (facilityId, groupId, defaultGroupId) => {
   try {
     // Find the specific DefaultGroup entry by id
@@ -693,7 +1094,6 @@ export const removeOneDefaultGroup = async (facilityId, groupId, defaultGroupId)
   }
 };
 
-// to work on it next time
 export const removeGroupFromAllDefaultGroups = async (groupId) => {
   try {
     const defaultGroups = await DefaultGroupModel.findAll();
@@ -770,8 +1170,13 @@ export const getFacilitiesHasDefaultGroups = async (campus) => {
         {
           model: DefaultGroupModel,
           as: 'facilitydefaultGroups',
-          attributes: ['id', 'time', 'trimester', 'groups'],
+          attributes: ['id', 'module', 'lecturer', 'trimester','status' ,'groups'],
           required: false,
+          include: [
+            {
+              model: TimeModel,
+              as: "defaultgroupidTimes",
+            },]
         },
       ],
     });
@@ -914,8 +1319,13 @@ export const getFacilitiesHasDefaultGroupsForStudent = async () => {
         {
           model: DefaultGroupModel,
           as: 'facilitydefaultGroups',
-          attributes: ['id', 'time', 'trimester', 'groups'],
+          attributes: ['id', 'module', 'lecturer', 'trimester', 'groups','status'],
           required: false,
+          include: [
+            {
+              model: TimeModel,
+              as: "defaultgroupidTimes",
+            },]
         },
       ],
     });
@@ -1087,8 +1497,13 @@ export const getFacilitiesHasDefaultGroupsBySchool = async (campus, userId) => {
         {
           model: DefaultGroupModel,
           as: 'facilitydefaultGroups',
-          attributes: ['id', 'time', 'trimester', 'groups'],
+          attributes: ['id', 'module', 'lecturer', 'trimester', 'groups','status'],
           required: false,
+          include: [
+            {
+              model: TimeModel,
+              as: "defaultgroupidTimes",
+            },]
         },
       ],
     });
@@ -1135,12 +1550,6 @@ export const getFacilitiesHasDefaultGroupsBySchool = async (campus, userId) => {
                                     {
                                       model: CollegeModel,
                                       attributes: ['id', 'name', 'abbreviation'],
-                                      include: [
-                                        {
-                                          model: CollegeModel,
-                                          attributes: ['id', 'name', 'abbreviation'],
-                                        },
-                                      ],
                                     },
                                   ],
                                 },
@@ -1211,3 +1620,252 @@ export const getFacilitiesHasDefaultGroupsBySchool = async (campus, userId) => {
     throw new Error(`Error getting facilities: ${error.message}`);
   }
 };
+
+
+export const addTimeToDefaultGroup = async (day, timeInterval, defaultGroupId) => {
+  try {
+    // Find the default group by ID and include the facility information
+    const defaultGroup = await DefaultGroupModel.findOne({
+      where: { id: defaultGroupId },
+      include: [{
+        model: FacilitiesModel, // Ensure to import and use your Facility model
+        as: 'facility',
+      }],
+    });
+
+    if (!defaultGroup) {
+      throw new Error("Default group does not exist");
+    }
+
+    // Get the facility ID from the found default group
+    const facilityId = defaultGroup.facilityId;
+
+    // Check if there is already a time entry for this day, timeInterval, and defaultGroupId
+    const existingTimeEntry = await TimeModel.findOne({
+      where: {
+        defaultgroupid: defaultGroupId,
+        facility: facilityId, 
+        day,
+        timeInterval,
+      },
+    });
+
+    if (existingTimeEntry) {
+      return {
+        success: false,
+        message: `A time entry for ${day} at ${timeInterval} already exists for this default group.`,
+      };
+    }
+
+    // Create a new time entry since no conflicts exist
+    const newTimeEntry = await TimeModel.create({
+      day,
+      timeInterval,
+      facility: facilityId, // Save the facility from the default group
+      defaultgroupid: defaultGroupId, // Associate the time with the default group
+    });
+
+    return {
+      success: true,
+      message: "Time added successfully",
+      newTime: newTimeEntry,
+    };
+  } catch (error) {
+    console.error("Error adding time to default group:", error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const deleteTimeById = async (timeId) => {
+  try {
+    // Find the time entry by ID
+    const timeEntry = await TimeModel.findOne({
+      where: { id: timeId },
+    });
+
+    if (!timeEntry) {
+      return {
+        success: false,
+        message: "Time entry not found",
+      };
+    }
+
+    // Delete the time entry
+    await timeEntry.destroy();
+
+    return {
+      success: true,
+      message: "Time entry deleted successfully",
+    };
+
+  } catch (error) {
+    console.error("Error deleting time entry:", error);
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+
+export const getDefaultGroupsWithTimes = async () => {
+  try {
+    const TimeTable = await TimeModel.findAll({
+      include: [
+        {
+          model: DefaultGroupModel,
+          as: 'defaultgroupTime', // Ensure this matches your association alias
+          include: [
+            {
+              model: FacilitiesModel,
+              as: 'facility', // Ensure this matches your association alias
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!TimeTable) {
+      return null;
+    }
+
+    const timeTableWithGroupDetails = await Promise.all(
+      TimeTable.map(async (timeEntry) => {
+        const defaultGroup = timeEntry.defaultgroupTime;
+
+        if (!defaultGroup.groups || defaultGroup.groups.length === 0) {
+          return timeEntry;
+        }
+
+        const groupsWithDetails = await Promise.all(
+          defaultGroup.groups.map(async (groupId) => {
+            const group = await GroupModel.findOne({
+              attributes: ['id', 'name', 'size'],
+              where: { id: groupId },
+              include: [
+                {
+                  model: IntakeModel,
+                  include: [
+                    {
+                      model: ProgramModel,
+                      attributes: ['id', 'name'],
+                      include: [
+                        {
+                          model: DepartmentModel,
+                          attributes: ['id', 'name'],
+                          include: [
+                            {
+                              model: SchoolModel,
+                              attributes: ['id', 'name'],
+                              include: [
+                                {
+                                  model: CollegeModel,
+                                  attributes: ['id', 'name', 'abbreviation'],
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            });
+
+            return {
+              id: group.id,
+              name: group.name,
+              size: group.size,
+              intake: group.Intake
+                ? {
+                    id: group.Intake.id,
+                    name: group.Intake.displayName,
+                    program: group.Intake.program
+                      ? {
+                          id: group.Intake.program.id,
+                          name: group.Intake.program.name,
+                          department: group.Intake.program.department
+                            ? {
+                                id: group.Intake.program.department.id,
+                                name: group.Intake.program.department.name,
+                                school: group.Intake.program.department.School
+                                  ? {
+                                      id: group.Intake.program.department.School.id,
+                                      name: group.Intake.program.department.School.name,
+                                      college: group.Intake.program.department.School.college
+                                        ? {
+                                            id: group.Intake.program.department.School.college.id,
+                                            name: group.Intake.program.department.School.college.name,
+                                            abbreviation: group.Intake.program.department.School.college.abbreviation,
+                                          }
+                                        : null,
+                                    }
+                                  : null,
+                              }
+                            : null,
+                      }
+                    : null,
+                  }
+                : null,
+            };
+          })
+        );
+
+        return {
+          ...timeEntry.toJSON(),
+          defaultgroupTime: {
+            ...defaultGroup.toJSON(),
+            groups: groupsWithDetails,
+          },
+        };
+      })
+    );
+
+    return timeTableWithGroupDetails;
+  } catch (error) {
+    throw new Error(`Error getting facility: ${error.message}`);
+  }
+};
+
+
+export const activateDefaultGroup = async (id) => {
+  try {
+    const defaultGroup = await DefaultGroupModel.findByPk(id);
+
+    if (!defaultGroup) {
+      throw new Error("DefaultGroup not found");
+    }
+
+    // Activate the group by setting status to 'active'
+    defaultGroup.status = 'active';
+    await defaultGroup.save();
+
+    return defaultGroup;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export const deactivateDefaultGroup = async (id) => {
+  try {
+    const defaultGroup = await DefaultGroupModel.findByPk(id);
+
+    if (!defaultGroup) {
+      throw new Error("DefaultGroup not found");
+    }
+
+    // Deactivate the group by setting status to 'inactive'
+    defaultGroup.status = 'inactive';
+    await defaultGroup.save();
+
+    return defaultGroup;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+

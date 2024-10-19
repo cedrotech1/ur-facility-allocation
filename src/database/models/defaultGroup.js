@@ -12,10 +12,17 @@ module.exports = (sequelize, DataTypes) => {
           },
           onDelete: 'CASCADE',
         },
-        time: {
-          type: DataTypes.ENUM('morning', 'afternoon', 'full day', 'evening', 'weekend'),
+
+        module: {
+          type: DataTypes.STRING,
           allowNull: false,
         },
+
+        lecturer: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+    
         trimester: {
           type: DataTypes.STRING,
           allowNull: false,
@@ -28,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
             },
             allowNull: true,
         },
+        status: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
       },
       {}
     );
@@ -36,6 +47,11 @@ module.exports = (sequelize, DataTypes) => {
       DefaultGroup.belongsTo(models.Facility, {
         foreignKey: 'facilityId',
         as: 'facility',
+      });
+
+      DefaultGroup.hasMany(models.Time, {
+        foreignKey: 'defaultgroupid',
+        as: 'defaultgroupidTimes',
       });
 
     };

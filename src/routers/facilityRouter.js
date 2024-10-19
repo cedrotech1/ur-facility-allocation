@@ -14,7 +14,13 @@ import {
   getFacilitiesWithDefaultGroupsByDean,
   getDisactivatesFacilities,
   getActivatedFacilities,
-  getFacilitiesWithDefaultGroupsForStudent
+  getFacilitiesWithDefaultGroupsForStudent,
+  updateDefaultGroups,
+  addTimeController,
+  deleteTimeController,
+  fetchDefaultGroupsWithTimes,
+  activate,
+  deactivate
 } from "../controllers/facilitiesController";
 import { protect } from "../middlewares/protect";
 
@@ -34,8 +40,15 @@ router.delete("/delete/:id", protect, deleteOneFacility);
 router.post("/:id/facility", protect, addOneMaterial);
 router.delete("/:id/facility", protect, removeOneMaterial);
 router.put("/:id/assign", protect, assignDefaultGroupsToFacility);
+router.put("/default-groups/:id/time", protect, addTimeController);
+router.delete("/delete/times/:id", protect, deleteTimeController);
+router.put("/:id/defaultgroup/addgroup", protect, updateDefaultGroups);
 router.put("/:id/unassign", protect, removeOneDefaultGroupFromFacility);
 router.put("/:id/unassign/all", protect, removeAllDefaultGroupsFromFacility);
+router.get("/timetable",protect, fetchDefaultGroupsWithTimes);
+router.put("/defaultGroups/activate/:id", protect, activate);
+router.put("/defaultGroups/deactivate/:id", protect, deactivate);
+
 
 
 

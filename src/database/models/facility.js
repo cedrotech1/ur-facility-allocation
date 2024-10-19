@@ -88,6 +88,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'facilityId',
       as: 'facilitydefaultGroups',
     });
+    Facility.hasMany(models.Time, {
+      foreignKey: 'facility',
+      as: 'timeOccupied',
+    });
   };
 
   return Facility;

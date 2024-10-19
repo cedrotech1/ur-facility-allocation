@@ -1,4 +1,3 @@
-// migrations/20230921123456-create-default-group.js
 'use strict';
 
 module.exports = {
@@ -8,42 +7,51 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       facilityId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Facilities',
-          key: 'id'
+          model: 'Facilities', 
+          key: 'id',
         },
         onDelete: 'CASCADE',
       },
-      time: {
-        type: Sequelize.ENUM('morning', 'afternoon', 'full day', 'evening', 'weekend'),
-        allowNull: false
+      module: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      lecturer: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       trimester: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       groups: {
-        type: Sequelize.JSON,
-        allowNull: true
+        type:Sequelize.JSON,
+        allowNull: true,
+      },
+      status: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') 
+        defaultValue: Sequelize.NOW,
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') 
-      }
+        defaultValue: Sequelize.NOW,
+      },
     });
   },
+
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('DefaultGroups');
-  }
+  },
 };
