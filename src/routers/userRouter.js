@@ -10,12 +10,18 @@ import {
   updateUserPrivileges,
   changePassword,
   getClassRepresentatives,
+  processAddUsers,
+  getAllLect
 } from '../controllers/userController';
 import { protect } from '../middlewares/protect';
-
+import multer from 'multer';
 const router = express.Router();
 
+const upload = multer({ dest: 'uploads/' });
+
+router.get('/upload-lectures',protect, upload.single('file'),express.json(),processAddUsers);
 router.get('/class-rep', protect, getClassRepresentatives);
+router.get('/lectures', protect, getAllLect);
 router.get('/', protect, getAllUsers);
 router.get('/:id', protect, getOneUser);
 router.post('/addUser', protect, addUser);

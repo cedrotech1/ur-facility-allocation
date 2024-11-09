@@ -19,12 +19,20 @@ module.exports = {
         onDelete: 'CASCADE',
       },
       module: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false,
+        // references: {
+        //   model: 'modules', 
+        //   key: 'id',
+        // },
       },
       lecturer: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false,
+        references: {
+          model: 'Users', 
+          key: 'id',
+        },
       },
       trimester: {
         type: Sequelize.STRING,

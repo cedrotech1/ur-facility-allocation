@@ -14,6 +14,7 @@ import intakeRouter from './intakeRouter';
 import groupRouter from './groupRouter';
 import bookingRouter from './bookingRouter';
 import notificationRouter from './notificationRouter';
+import moduleRouter from './moduleRouter';
 const router = express.Router();
 
 router.use('/docs', docrouter);
@@ -30,5 +31,6 @@ router.use("/intake", intakeRouter);
 router.use("/group", groupRouter);
 router.use("/booking", bookingRouter);
 router.use("/notifications", notificationRouter);
+router.use("/modules", moduleRouter);
 
 export default router;

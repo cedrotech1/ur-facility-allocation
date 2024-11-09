@@ -6,6 +6,7 @@ const CollegeModel = db["college"];
 const programModel = db["program"];
 const Intake = db["Intake"];
 const groupModel = db["Groups"];
+const ModulesModel = db["Module"];
 
 export const allprograms = async () => {
   const programs = await programModel.findAll({
@@ -42,6 +43,10 @@ export const allprograms = async () => {
           },
         ],
       },
+        {
+          model: ModulesModel,
+          as: "modules",
+        }
     ],
   });
   return programs;
@@ -135,6 +140,10 @@ export const getOneProgramWithDetails = async (id) => {
           },
         ],
       },
+      {
+        model: ModulesModel,
+        as: "modules",
+      }
     ],
   });
   return program;

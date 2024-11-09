@@ -20,6 +20,15 @@ module.exports = {
         updatedAt: new Date(),
       },
 
+      {
+        id: "3",
+        name: "college medecine and carin....",
+        abbreviation: "CAVEM",
+        campus_id: "1",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+
       // Add more user data objects as needed
     ]);
   },

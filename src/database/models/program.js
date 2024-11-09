@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       program.belongsTo(models.department, { foreignKey: 'department_ID', targetKey: 'id' });
       program.hasMany(models.Intake, { foreignKey: 'program_ID', sourceKey: 'id' });
+      program.hasMany(models.Module, { foreignKey: 'programID', sourceKey: 'id', as: 'modules' });
     }
   }
   program.init({

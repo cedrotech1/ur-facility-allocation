@@ -5,17 +5,23 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     return queryInterface.bulkInsert("Schools", [
       {
-        name: "Business",
+        name: "BUSINESS",
         college_ID: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        name: "school of art",
-        college_ID: "2",
+        name: "ECONOMICS",
+        college_ID: "1",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        name: "SCHOOL OF ARTS, LANGUAGES AND COMMUNICATION STUDIES",
+        college_ID: "2",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
     ]);
   },
 

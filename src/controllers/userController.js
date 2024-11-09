@@ -13,9 +13,85 @@ import {
   generateChangePasswordToken,
   GetUserPassword,
   getUserByPrivilege,
+  saveUsersData,
+  getLect
 } from "../services/userService";
 import { checkprivileges, checkPrivilegeValidity } from "../helpers/privileges";
 import imageUploader from "../helpers/imageUplouder";
+
+const xlsx = require('xlsx');
+const fs = require('fs');
+const path = require('path');
+
+export const processAddUsers = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+
+  console.log(req.user.campus);
+
+  const fileExtension = path.extname(req.file.originalname);
+  if (fileExtension !== '.xlsx' && fileExtension !== '.xls') {
+    return res.status(400).send('Invalid file format. Please upload an Excel file.');
+  }
+
+  const results = [];
+  const duplicateUsers = [];
+  const excelFilePath = req.file.path;
+
+  try {
+    const workbook = xlsx.readFile(excelFilePath);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    // Convert the sheet to JSON
+    const data = xlsx.utils.sheet_to_json(sheet);
+    for (const row of data) {
+
+      const existingUser = await getUserByEmail(row.email);
+      if (existingUser) {
+        duplicateUsers.push(row.email);
+        continue;
+      }
+
+      const userData = {
+        campus: req.user.campus,
+        firstname: row.firstname,
+        lastname: row.lastname,
+        phone: "",
+        email: row.email,
+        status: 'active',
+        role: 'lecturer',
+        password: `P${Math.random().toString(36).slice(-8)}`,
+      };
+
+      results.push(userData);
+    }
+    fs.unlinkSync(excelFilePath);
+    const { createdUsers } = await saveUsersData(results);
+
+    // Send email to newly created users
+    for (const newUser of createdUsers) {
+      const resetToken = await generateChangePasswordToken(newUser);
+      const url = `${process.env.FRONTEND_URL}/auth/reset/${resetToken}`;
+      await new Email(newUser, url).sendAccountAdded();
+    }
+
+
+    return res.json({
+      message: 'Users processed successfully.',
+      createdUsers,
+      duplicateUsers: duplicateUsers.length > 0
+        ? `Duplicate users skipped: ${duplicateUsers.join(', ')}`
+        : 'No duplicates found'
+    });
+
+  } catch (error) {
+    console.error('Error processing the Excel file:', error.message);
+    return res.status(500).send('Error processing the Excel file: ' + error.message);
+  }
+};
+
 
 export const changePassword = async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
@@ -202,7 +278,7 @@ export const addUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    let users;
+    let users=[];
     if (req.user.role === "root") {
       users = await getUsers("superadmin");
     }
@@ -216,6 +292,24 @@ export const getAllUsers = async (req, res) => {
       success: true,
       message: "Users retrieved successfully",
       users,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
+export const getAllLect = async (req, res) => {
+  try {
+    let lecturers = await getLect("lecturer");
+
+    return res.status(200).json({
+      success: true,
+      message: "lecturer retrieved successfully",
+      lecturers,
     });
   } catch (error) {
     console.log(error);

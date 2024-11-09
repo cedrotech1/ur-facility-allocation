@@ -14,13 +14,21 @@ module.exports = (sequelize, DataTypes) => {
         },
 
         module: {
-          type: DataTypes.STRING,
+          type: DataTypes.INTEGER, // Change to INTEGER if referencing Module ID
           allowNull: false,
+          // references: {
+          //   model: "Modules",
+          //   key: "id",
+          // },
         },
-
+  
         lecturer: {
-          type: DataTypes.STRING,
+          type: DataTypes.INTEGER, // Change to INTEGER if referencing User ID
           allowNull: false,
+          // references: {
+          //   model: "Users",
+          //   key: "id",
+          // },
         },
     
         trimester: {
@@ -48,6 +56,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'facilityId',
         as: 'facility',
       });
+      DefaultGroup.belongsTo(models.Users, { foreignKey: 'lecturer', as:"lecturerdetail"});
+      DefaultGroup.belongsTo(models.Module, { foreignKey: 'module', as:"moduledetail"});
 
       DefaultGroup.hasMany(models.Time, {
         foreignKey: 'defaultgroupid',

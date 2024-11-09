@@ -13,6 +13,19 @@ export const createUser = async (user) => {
   return newUser;
 };
 
+export const saveUsersData = async (users) => {
+  try {
+    const createdUsers = [];
+    for (const user of users) {
+      const newUser = await Users.create(user);
+      createdUsers.push(newUser);
+    }
+    return { createdUsers };
+  } catch (error) {
+    throw new Error('Error saving users: ' + error.message);
+  }
+};
+
 export const getUser = async (id) => {
   const user = await Users.findByPk(id, {
     attributes: { exclude: ["password"] },
@@ -92,11 +105,25 @@ export const getUserByEmail = async (email) => {
 
 export const getUsers = async (role) => {
   const allUsers = await Users.findAll({
-    where: { role },
+    where: {
+      role,
+      role: { [Op.ne]: "lecturer" }, 
+    },
     attributes: { exclude: ["password"] },
   });
   return allUsers;
 };
+
+export const getLect = async (role) => {
+  const allUsers = await Users.findAll({
+    where: {
+      role
+    },
+    attributes: { exclude: ["password"] },
+  });
+  return allUsers;
+};
+
 
 export const getUsersByCampus = async (campus) => {
   const allUsers = await Users.findAll({

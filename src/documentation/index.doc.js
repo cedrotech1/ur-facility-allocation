@@ -31,6 +31,7 @@ const options = {
     { name: "booking", description: "booking" },
     { name: "notification", description: "notification" },
     { name: "Privileges", description: "Privileges" },
+    { name: "modules", description: "modules" },
   ],
   paths: {
     "/api/v1/auth/login": {
@@ -186,6 +187,32 @@ const options = {
       },
     },
 
+    "/api/v1/users/lectures": {
+      get: {
+        tags: ["Users"],
+        summary: "Get all lecturer",
+        description: "Get all lecturer",
+        operationId: "getAlllecturer",
+        responses: {
+          200: {
+            description: "User deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
     "/api/v1/users": {
       get: {
         tags: ["Users"],
@@ -328,6 +355,91 @@ const options = {
           },
         },
       },
+    },
+    "/api/v1/users/upload-lectures": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Upload a file to add multiple lectures",
+        "description": "Upload a CSV or Excel file to bulk add lectures",
+        "operationId": "uploadlecturesFile",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "CSV or Excel file containing facility data"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "lectures added successfully from file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
 
     "/api/v1/users/changePassword": {
@@ -1172,6 +1284,92 @@ const options = {
         },
       },
     },
+    "/api/v1/facilities/upload-facilities": {
+  "get": {
+    "tags": ["Facilities"],
+    "summary": "Upload a file to add multiple facilities",
+    "description": "Upload a CSV or Excel file to bulk add facilities with campus_id automatically set to the authenticated user's campus",
+    "operationId": "uploadFacilitiesFile",
+    "requestBody": {
+      "content": {
+        "multipart/form-data": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "string",
+                "format": "binary",
+                "description": "CSV or Excel file containing facility data"
+              }
+            },
+            "required": ["file"]
+          }
+        }
+      },
+      "required": true
+    },
+    "responses": {
+      "201": {
+        "description": "Facilities added successfully from file",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "400": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+},
+
     "/api/v1/facilities": {
       get: {
         tags: ["Facilities"],
@@ -1775,6 +1973,205 @@ const options = {
           },
           404: {
             description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+    "/api/v1/modules/upload-modules": {
+      "get": {
+        "tags": ["modules"],
+        "summary": "Upload a file to add multiple modules",
+        "description": "Upload a CSV or Excel file to bulk add facilities",
+        "operationId": "uploadModuleFile",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "CSV or Excel file containing facility data"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Facilities added successfully from file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/api/v1/modules": {
+      get: {
+        tags: ["modules"],
+        summary: "get a modules",
+        description: "get a modules",
+        operationId: "get modules",
+
+        responses: {
+          200: {
+            description: "modules retrieved successfully",
+          },
+          201: {
+            description: "modules retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+    "/api/v1/modules/{id}": {
+      put: {
+        tags: ["modules"],
+        summary: "get a modules",
+        description: "get a modules",
+        operationId: "get modules",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "module's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/Module",
+              },
+              example: {
+                majorArea: "Computer Science",
+                subjectCode: "CS101",
+                subjectName: "Introduction to Computer Science",
+                yearOfStudy: 1,
+                blocks: "Block A, Block B",
+                credits: 3,
+                majorElective: "Major",
+                programID: 1
+              }
+            },
+          },
+          required: true,
+        },
+
+        responses: {
+          200: {
+            description: "modules retrieved successfully",
+          },
+          201: {
+            description: "modules retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/modules/delete/{id}": {
+      delete: {
+        tags: ["modules"],
+        summary: "get a delete modules",
+        description: "delete a modules",
+        operationId: "delete modules",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            description: "module's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+     
+        responses: {
+          200: {
+            description: "modules retrieved successfully",
+          },
+          201: {
+            description: "modules retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
           },
           500: {
             description: "Something went wrong",
@@ -3566,6 +3963,43 @@ const options = {
             description: "dean id",
           },
         },
+      },
+      Module: {
+        type: "object",
+        properties: {
+          majorArea: {
+            type: "string",
+            description: "The major area of study the module belongs to."
+          },
+          subjectCode: {
+            type: "string",
+            description: "The unique code of the subject associated with the module."
+          },
+          subjectName: {
+            type: "string",
+            description: "The name of the subject/module."
+          },
+          yearOfStudy: {
+            type: "integer",
+            description: "The year of study the module is part of (e.g., Year 1, Year 2)."
+          },
+          blocks: {
+            type: "string",
+            description: "The blocks or periods in which the module is taught."
+          },
+          credits: {
+            type: "integer",
+            description: "The number of credits associated with the module."
+          },
+          majorElective: {
+            type: "string",
+            description: "Indicates whether the module is a major or an elective module."
+          },
+          programID: {
+            type: "integer",
+            description: "The ID of the program to which the module belongs."
+          }
+        }
       },
       Facility: {
         type: "object",

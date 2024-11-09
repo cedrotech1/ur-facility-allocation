@@ -1,4 +1,5 @@
 import express from "express";
+import multer from 'multer';
 import {
   getAllFacilities,
   getOneFacilityById,
@@ -20,14 +21,15 @@ import {
   deleteTimeController,
   fetchDefaultGroupsWithTimes,
   activate,
-  deactivate
+  deactivate,
+  processFacilities 
 } from "../controllers/facilitiesController";
+
 import { protect } from "../middlewares/protect";
-
 const router = express.Router();
-
-
-router.get("/withDefaultGroupsByDean",protect, getFacilitiesWithDefaultGroupsByDean);
+const upload = multer({ dest: 'uploads/' }); 
+router.get('/upload-facilities',protect, upload.single('file'),express.json(), processFacilities);
+router.get("/withDefaultGroupsByDean", protect, getFacilitiesWithDefaultGroupsByDean);
 router.get("/withDefaultGroups", protect, getFacilitiesWithDefaultGroups);
 router.get("/withDefaultGroupsForStudent", getFacilitiesWithDefaultGroupsForStudent);
 router.get("/", protect, getAllFacilities);
@@ -45,11 +47,8 @@ router.delete("/delete/times/:id", protect, deleteTimeController);
 router.put("/:id/defaultgroup/addgroup", protect, updateDefaultGroups);
 router.put("/:id/unassign", protect, removeOneDefaultGroupFromFacility);
 router.put("/:id/unassign/all", protect, removeAllDefaultGroupsFromFacility);
-router.get("/timetable",protect, fetchDefaultGroupsWithTimes);
+router.get("/timetable", protect, fetchDefaultGroupsWithTimes);
 router.put("/defaultGroups/activate/:id", protect, activate);
 router.put("/defaultGroups/deactivate/:id", protect, deactivate);
-
-
-
 
 export default router;

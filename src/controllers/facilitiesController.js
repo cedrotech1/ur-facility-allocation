@@ -20,7 +20,9 @@ import {
   getOneDefaultGroup,
   getDefaultGroupsWithTimes,
   activateDefaultGroup,
-  deactivateDefaultGroup
+  deactivateDefaultGroup,
+  saveFacilitiesData,
+  
 
 } from "../services/facilityService.js";
 
@@ -30,8 +32,164 @@ import { get_Group } from "../services/groupService";
 import { checkprivileges } from "../helpers/privileges.js";
 import { Onecampus } from "../services/campusService.js";
 import Email from "../utils/mailer";
-
 import { getOneSchoolWithDetails } from "../services/schoolService";
+import fs from "fs";
+const path = require('path');
+const xlsx = require('xlsx');
+
+
+export const processFacilities = async (req, res) => {
+  if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+  }
+
+  const fileExtension = path.extname(req.file.originalname);
+  // Allow only Excel files: .xlsx or .xls
+  if (fileExtension !== '.xlsx' && fileExtension !== '.xls') {
+      return res.status(400).send('Invalid file format. Please upload an Excel file.');
+  }
+
+  const results = [];
+  const excelFilePath = req.file.path;
+
+  try {
+      const workbook = xlsx.readFile(excelFilePath);
+      const sheetName = workbook.SheetNames[0]; 
+      const sheet = workbook.Sheets[sheetName];
+
+      // Convert the sheet to JSON
+      const data = xlsx.utils.sheet_to_json(sheet);
+
+      data.forEach((row) => {
+          const materialsArray = row.materials ? row.materials.split(',').map(material => material.trim()) : [];
+
+          const facilityData = {
+              campus_id: req.user.campus, 
+              name: row.name,
+              location: row.location,
+              size: parseInt(row.size, 10), 
+              category: row.category,
+              status: 'active', 
+              materials: materialsArray 
+          };
+
+          results.push(facilityData); 
+      });
+
+      fs.unlinkSync(excelFilePath);
+      const { createdFacilities, duplicateFacilities } = await saveFacilitiesData(results);
+
+      // Respond to the client with results
+      return res.json({
+          message: 'Facilities processed successfully.',
+          createdFacilities,
+          duplicateFacilities: duplicateFacilities.length > 0 
+              ? `Duplicate facilities skipped: ${duplicateFacilities.join(', ')}`
+              : 'No duplicates found'
+      });
+
+  } catch (error) {
+      console.error('Error processing the Excel file:', error.message);
+      return res.status(500).send('Error processing the Excel file: ' + error.message);
+  }
+};
+
+
+
+
+export const createFacility = async (req, res) => {
+  if (
+    req.user.role === "user" &&
+    !checkprivileges(req.user.privileges, "manage-facilities")
+  ) {
+    return res.status(401).json({
+      success: false,
+      message: "Not authorized to create a facility",
+    });
+  }
+  if (!req.body.name || req.body.name === "") {
+    return res.status(400).json({
+      success: false,
+      message: "Name is required",
+    });
+  }
+  if (!req.body.location || req.body.location === "") {
+    return res.status(400).json({
+      success: false,
+      message: "Location is required",
+    });
+  }
+  if (!req.body.size || req.body.size === "") {
+    return res.status(400).json({
+      success: false,
+      message: "Size is required",
+    });
+  }
+  if (!req.body.category || req.body.category === "") {
+    return res.status(400).json({
+      success: false,
+      message: "Category is required",
+    });
+  }
+  if (!req.body.materials || req.body.materials === "") {
+    return res.status(400).json({
+      success: false,
+      message: "Materials is required",
+    });
+  }
+  req.body.campus_id = req.user.campus;
+  req.body.status = "active";
+
+  try {
+    const existingCampus = await Onecampus(req.body.campus_id);
+    if (!existingCampus) {
+      return res.status(400).json({
+        success: false,
+        message: "Campus does not exist",
+      });
+    }
+
+    const existingFacility = await getFacilityByCampusIdAndName(
+      req.body.campus_id,
+      req.body.location,
+      req.body.name
+    );
+    if (existingFacility) {
+      return res.status(400).json({
+        success: false,
+        message: "Facility with the same name already exists",
+      });
+    }
+
+    let managerId = null;
+    let technicianId = null;
+    if (
+      req.body.category === "computerLab" ||
+      req.body.category === "medicineLab"
+    ) {
+      managerId = req.body.managerId;
+      technicianId = req.body.technicianId;
+    }
+
+    const newFacility = await addFacility({
+      ...req.body,
+      managerId,
+      technicianId,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Facility created successfully",
+      Facility: newFacility,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
 
 export const fetchDefaultGroupsWithTimes = async (req, res) => {
   try {
@@ -207,99 +365,7 @@ export const updateDefaultGroups = async (req, res) => {
     });
   }
 };
-export const createFacility = async (req, res) => {
-  if (
-    req.user.role === "user" &&
-    !checkprivileges(req.user.privileges, "manage-facilities")
-  ) {
-    return res.status(401).json({
-      success: false,
-      message: "Not authorized to create a facility",
-    });
-  }
-  if (!req.body.name || req.body.name === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Name is required",
-    });
-  }
-  if (!req.body.location || req.body.location === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Location is required",
-    });
-  }
-  if (!req.body.size || req.body.size === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Size is required",
-    });
-  }
-  if (!req.body.category || req.body.category === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Category is required",
-    });
-  }
-  if (!req.body.materials || req.body.materials === "") {
-    return res.status(400).json({
-      success: false,
-      message: "Materials is required",
-    });
-  }
-  req.body.campus_id = req.user.campus;
-  req.body.status = "active";
 
-  try {
-    const existingCampus = await Onecampus(req.body.campus_id);
-    if (!existingCampus) {
-      return res.status(400).json({
-        success: false,
-        message: "Campus does not exist",
-      });
-    }
-
-    const existingFacility = await getFacilityByCampusIdAndName(
-      req.body.campus_id,
-      req.body.location,
-      req.body.name
-    );
-    if (existingFacility) {
-      return res.status(400).json({
-        success: false,
-        message: "Facility with the same name already exists",
-      });
-    }
-
-    let managerId = null;
-    let technicianId = null;
-    if (
-      req.body.category === "computerLab" ||
-      req.body.category === "medicineLab"
-    ) {
-      managerId = req.body.managerId;
-      technicianId = req.body.technicianId;
-    }
-
-    const newFacility = await addFacility({
-      ...req.body,
-      managerId,
-      technicianId,
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Facility created successfully",
-      Facility: newFacility,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-      error,
-    });
-  }
-};
 export const getDisactivatesFacilities = async (req, res) => {
   try {
     const facilities = await getDisactivesFacilities(req.user.campus);
@@ -690,7 +756,6 @@ export const getFacilitiesWithDefaultGroupsForStudent = async (req, res) => {
   }
 };
 
-
 export const getFacilitiesWithDefaultGroupsByDean = async (req, res) => {
   try {
     if (!checkprivileges(req.user.privileges, "school-dean")) {
@@ -706,6 +771,7 @@ export const getFacilitiesWithDefaultGroupsByDean = async (req, res) => {
     if (!facilities || facilities.length === 0) {
       return res.status(404).json({
         message: "No facilities found with default groups for the dean.",
+        facilities:[]
       });
     }
     const school = await deanschool(req.user.id);
