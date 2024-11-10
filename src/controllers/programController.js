@@ -7,6 +7,7 @@ import {
   checkExistingProgramByid,
   check,
   getOneProgramWithDetails,
+  allProgramswithModules
 } from "../services/programService.js";
 import { checkprivileges } from "../helpers/privileges";
 import { checkExistingDepartmentById } from "../services/departmentService.js";
@@ -40,6 +41,37 @@ export const programWithAll = async (req, res) => {
     });
   }
 };
+
+export const programWithmodules = async (req, res) => {
+  try {
+    const userCampusId = req.user.campus;
+    let data = await allProgramswithModules();
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Programs not found",
+      });
+    }
+
+    data = data?.filter(
+      (program) => program?.department?.School?.college?.Campus.id === userCampusId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Programs retrieved successfully",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+};
+
 
 export const addprogram = async (req, res) => {
   try {

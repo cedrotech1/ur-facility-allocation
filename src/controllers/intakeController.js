@@ -79,6 +79,7 @@ export const getIntakes = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Intakes not found",
+        intakes:[]
       });
     }
 

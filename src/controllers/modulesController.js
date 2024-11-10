@@ -39,20 +39,21 @@ export const processModules = async (req, res) => {
     // Extract necessary data from the Excel file
     excelData.forEach((data) => {
       const moduleData = {
-        major: data['Major Area (STEM/NON STEM)'],
-        subjectCode: data['Subject Code'],
-        subjectName: data['Subject Name'],
-        yearOfStudy: parseInt(data['Year of Study (1,2,3,4)'], 10),
-        blocks: data['Blocks (S1,S2)'],
-        credits: parseInt(data['Credits'], 10),
-        majorElective: data['Major/Elective'],
-        programID: data['programID'],
+        major: data['Major Area (STEM/NON STEM)'] || null,  // If data is missing, set it as null
+        subjectCode: data['Subject Code'] || null,
+        subjectName: data['Subject Name'] || null,
+        yearOfStudy: data['Year of Study (1,2,3,4)'] ? parseInt(data['Year of Study (1,2,3,4)'], 10) : null,  // Ensure null if missing
+        blocks: data['Blocks (S1,S2)'] || null,
+        credits: data['Credits'] ? parseInt(data['Credits'], 10) : null,  // Ensure null if missing
+        majorElective: data['Major/Elective'] || null,
+        programID: data['programID'] || null,
       };
 
       results.push(moduleData);
     });
 
     fs.unlinkSync(filePath);  // Remove the uploaded file after processing
+    // res.json(results);
     await saveAndRespond(results, res);
 
   } catch (error) {

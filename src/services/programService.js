@@ -43,6 +43,46 @@ export const allprograms = async () => {
           },
         ],
       },
+    ],
+  });
+  return programs;
+};
+
+export const allProgramswithModules = async () => {
+  const programs = await programModel.findAll({
+    include: [
+      {
+        model: departmentModel,
+        attributes: ["id", "name"],
+        include: [
+          {
+            model: schoolModel,
+            attributes: ["id", "name"],
+            include: [
+              {
+                model: CollegeModel,
+                attributes: ["id", "name"],
+                include: [
+                  {
+                    model: campusModel,
+                    attributes: ["id", "name"],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        model: Intake, // Include the IntakeModel
+        attributes: ["id", "displayName", "createdAt", "updatedAt"],
+        include: [
+          {
+            model: groupModel, // Include the GroupModel if applicable
+            attributes: ["id", "name", "createdAt", "updatedAt"],
+          },
+        ],
+      },
         {
           model: ModulesModel,
           as: "modules",

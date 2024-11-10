@@ -92,23 +92,10 @@ module.exports = {
       },
 
       // DEPARTMENTS IN CASS  SCHOOL OF SCHOOL OF ARTS, LANGUAGES AND COMMUNICATION STUDIES
-      {
-        id: "11",
-        name: "MODERN LANGUAGES AND CULTURES",
-        school_ID: "3",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+   
       {
         id: "12",
         name: "JOURNALISM, COMMUNICATION AND INFORMATION SCIENCE",
-        school_ID: "3",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: "13",
-        name: "MODERN LANGUAGES AND CULTURES",
         school_ID: "3",
         createdAt: new Date(),
         updatedAt: new Date(),

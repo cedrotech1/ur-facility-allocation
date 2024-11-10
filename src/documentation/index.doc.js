@@ -962,7 +962,7 @@ const options = {
         tags: ["campus"],
         summary: "delete campus",
         description: "delete campus",
-        operationId: "delete campus",
+        operationId: "delete_campus",
         parameters: [
           {
             name: "id",
@@ -1131,7 +1131,7 @@ const options = {
         tags: ["school"],
         summary: "get a schools",
         description: "get a schools",
-        operationId: "get schools",
+        operationId: "get_schools",
 
         responses: {
           200: {
@@ -1185,7 +1185,7 @@ const options = {
         tags: ["school"],
         summary: "delete one schools",
         description: "delete one  school",
-        operationId: "delete school",
+        operationId: "delete_school",
         parameters: [
           {
             name: "id",
@@ -1375,7 +1375,7 @@ const options = {
         tags: ["Facilities"],
         summary: "get a facilities",
         description: "get a facilities",
-        operationId: "get facilities",
+        operationId: "get_facilities",
 
         responses: {
           200: {
@@ -1399,7 +1399,7 @@ const options = {
         tags: ["Facilities"],
         summary: "get facilities with default groups",
         description: "get  facilities with default groups",
-        operationId: "get facilities with default groups",
+        operationId: "get_facilities_with_default_groups",
         responses: {
           200: {
             description: "facilities retrieved successfully",
@@ -1418,7 +1418,7 @@ const options = {
         tags: ["Facilities"],
         summary: "get facilities with default groups ForStudent",
         description: "get  facilities with default groups ForStudent",
-        operationId: "get facilities with default groups ForStudent",
+        operationId: "timetable_ForStudent",
         responses: {
           200: {
             description: "facilities retrieved successfully",
@@ -1437,7 +1437,7 @@ const options = {
         tags: ["Facilities"],
         summary: "get facilities with default groups by dean",
         description: "get  facilities with default groups by dean",
-        operationId: "get facilities with default groups by dean",
+        operationId: "for_dean",
         responses: {
           200: {
             description: "facilities retrieved successfully",
@@ -1487,7 +1487,7 @@ const options = {
         tags: ["Facilities"],
         summary: "get a disactivated facilities",
         description: "get a disactivated facilities",
-        operationId: "get disactivated facilities",
+        operationId: "get_disactivated_facilities",
 
         responses: {
           200: {
@@ -1510,7 +1510,7 @@ const options = {
         tags: ["Facilities"],
         summary: "get a activated facilities",
         description: "get a activated facilities",
-        operationId: "get activated facilities",
+        operationId: "get_activated_facilities",
 
         responses: {
           200: {
@@ -1529,11 +1529,12 @@ const options = {
       },
     },
     "/api/v1/facilities/delete/{id}": {
+
       delete: {
         tags: ["Facilities"],
         summary: "delete one facility",
         description: "delete one  facility",
-        operationId: "delete facility",
+        operationId: "delete_facility",
         parameters: [
           {
             name: "id",
@@ -2150,7 +2151,7 @@ const options = {
         tags: ["modules"],
         summary: "get a delete modules",
         description: "delete a modules",
-        operationId: "delete modules",
+        operationId: "delete_modules",
         parameters: [
           {
             name: "id",
@@ -2187,7 +2188,7 @@ const options = {
         tags: ["department"],
         summary: "Add a department",
         description: "Add a department",
-        operationId: "add department",
+        operationId: "add_department",
         requestBody: {
           content: {
             "application/json": {
@@ -2219,7 +2220,7 @@ const options = {
         tags: ["department"],
         summary: "get all departments",
         description: "get all departments in the system",
-        operationId: "get department",
+        operationId: "get_department",
         responses: {
           201: {
             description: "department retieved successfully",
@@ -2309,7 +2310,7 @@ const options = {
         tags: ["department"],
         summary: "update a department",
         description: "update a department",
-        operationId: "update department",
+        operationId: "update_department",
         parameters: [
           {
             name: "id",
@@ -2353,7 +2354,7 @@ const options = {
         tags: ["Facilities"],
         summary: "get booked facilities",
         description: "get booked facilities",
-        operationId: "get booked facilities",
+        operationId: "get_booked_facilities",
 
         responses: {
           200: {
@@ -2445,7 +2446,31 @@ const options = {
         tags: ["program"],
         summary: "get all program",
         description: "get all program in the system",
-        operationId: "get programs",
+        operationId: "get_programs",
+
+        responses: {
+          201: {
+            description: "program retieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+    "/api/v1/program/modules": {
+      get: {
+        tags: ["program"],
+        summary: "get all program",
+        description: "get all program with their coresponding modules in the system",
+        operationId: "get_programs_with_modules",
 
         responses: {
           201: {
@@ -2469,7 +2494,7 @@ const options = {
         tags: ["program"],
         summary: "update a program",
         description: "update a program",
-        operationId: "update program",
+        operationId: "update_program",
         parameters: [
           {
             name: "id",
@@ -2546,7 +2571,7 @@ const options = {
         tags: ["intake"],
         summary: "get all intake",
         description: "get all intake in the system",
-        operationId: "get intake",
+        operationId: "get_intake",
 
         responses: {
           201: {
@@ -2642,7 +2667,7 @@ const options = {
         tags: ["intake"],
         summary: "update a intake",
         description: "update a intake",
-        operationId: "update intake",
+        operationId: "update_intake",
         parameters: [
           {
             name: "id",
@@ -2807,7 +2832,7 @@ const options = {
         tags: ["group"],
         summary: "get all intake",
         description: "get all group in the system",
-        operationId: "get group",
+        operationId: "get_group",
 
         responses: {
           201: {
@@ -2833,7 +2858,7 @@ const options = {
         tags: ["group"],
         summary: "Add a group",
         description: "Add a group",
-        operationId: "add group",
+        operationId: "add_group",
         requestBody: {
           content: {
             "application/json": {
@@ -2865,7 +2890,7 @@ const options = {
         tags: ["group"],
         summary: "update a group",
         description: "update a group",
-        operationId: "update group",
+        operationId: "update_group",
         parameters: [
           {
             name: "id",

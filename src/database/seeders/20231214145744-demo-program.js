@@ -24,14 +24,14 @@ module.exports = {
         },
 
            // insuarrance department 1
-      {
-        id: "3",
-        name: "BACHELOR OF BUSINESS ADMINISTRATION WITH HONORS OPTION: INSURANCE",
-        description:"",
-        department_ID: "1",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+      // {
+      //   id: "3",
+      //   name: "BACHELOR OF BUSINESS ADMINISTRATION WITH HONORS OPTION: INSURANCE",
+      //   description:"",
+      //   department_ID: "1",
+      //   createdAt: new Date(),
+      //   updatedAt: new Date(),
+      // },
 
        // bit department 3
       {
@@ -116,9 +116,19 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-      // CASS LELATED COURSES
       {
         id: "13",
+        name: " BSC (HON) IN MONETARY ECONOMICS",
+        description:"",
+        department_ID: "10",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+
+     
+      // CASS LELATED COURSES
+      {
+        id: "14",
         name: "BA (HONS) IN ENGLISH AND FRENCH",
         description:"",
         department_ID: "14",
@@ -126,16 +136,8 @@ module.exports = {
         updatedAt: new Date(),
       },
       {
-        id: "14",
-        name: "BA (HONS) IN CREATIVE AND PERFORMING ARTS",
-        description:"",
-        department_ID: "14",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
         id: "15",
-        name: "BA (HONS) IN JOURNALISM AND COMMUNICATION",
+        name: "BA (HONS) IN CREATIVE AND PERFORMING ARTS",
         description:"",
         department_ID: "14",
         createdAt: new Date(),
